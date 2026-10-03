@@ -818,6 +818,18 @@ body.splashing .hero.enter .dh,body.splashing .hero.enter .dh .dh-pin{animation-
 .push-acts .btn-text{background:var(--surface)}
 .push-card{background:color-mix(in oklab,var(--c-grape) 11%,var(--surface))}
 .push-card .ic{background:var(--c-grape)}
+/* ---------- v9: varias opciones al crear tareas ---------- */
+.label .lh{margin-left:8px;font-size:11.5px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink-3);opacity:.85}
+.avstack{display:inline-flex}
+.avstack .av{margin-left:-8px;box-shadow:0 0 0 2px var(--surface)}
+.avstack .av:first-child{margin-left:0}
+.diff{padding:14px 6px 12px}
+.rep-days{margin-top:10px}
+.rep-days .days{display:flex;gap:4px;background:var(--surface-2)}
+.rep-days .days button{flex:1;width:auto;height:40px;display:grid;place-items:center;text-align:center}
+.make-n{display:flex;align-items:center;gap:9px;margin-top:18px;padding:11px 14px;border-radius:15px;background:color-mix(in oklab,var(--c-sky) 12%,var(--surface));font-size:14px;font-weight:700;color:var(--ink-2)}
+.make-n svg{width:19px;height:19px;flex:none;color:var(--c-sky)}
+.make-n b{color:var(--ink);font-weight:900}
 </style>
 </head>
 <body>
@@ -1838,7 +1850,7 @@ function taskCard(t){
     <button class="check" data-act="complete" data-id="${esc(t.id)}" aria-label="Marcar como hecha: ${esc(t.title)}">${ICON.check}</button>
     <button class="task-body" data-act="edit-task" data-id="${esc(t.id)}" aria-label="Editar ${esc(t.title)}">
       <span class="task-title">${esc(t.title)}</span>
-      <span class="meta"><span class="chip">${esc(r.emoji)} ${esc(r.name)}</span>${due.label ? `<span class="chip t-${due.tone}">${due.bucket === 'late' || due.bucket === 'today' ? ICON.clock : ICON.cal}${esc(due.label)}</span>` : ''}${t.repeat === 'daily' || t.repeat === 'weekly' ? `<span class="chip ghost">${ICON.repeat}${t.repeat === 'daily' ? 'Diaria' : 'Semanal'}</span>` : ''}</span>
+      <span class="meta"><span class="chip">${esc(r.emoji)} ${esc(r.name)}</span>${due.label ? `<span class="chip t-${due.tone}">${due.bucket === 'late' || due.bucket === 'today' ? ICON.clock : ICON.cal}${esc(due.label)}</span>` : ''}${repeatChip(t)}</span>
     </button>
     <span class="task-side">
       <span class="pts d-${dk}" title="${d.label}: ${pts} puntos">+${pts}<i class="bars b${d.bars}"><i></i><i></i><i></i></i></span>
@@ -2905,7 +2917,7 @@ const Ranking = {
         <div class="stat"><b>${totalPts}</b><span>puntos sumados en casa</span></div>
       </div>
       <div class="sec-h"><h2>Cómo se ganan puntos</h2></div>
-      <div class="rules">${Object.entries(DIFFS).map(([k, d]) => `<div class="rule d-${k}"><b>+${d.pts}</b><span>${d.label}</span><small>${d.hint}</small></div>`).join('')}</div>
+      <div class="rules">${Object.entries(DIFFS).map(([k, d]) => `<div class="rule d-${k}"><b>+${d.pts}</b><span>${d.label}</span></div>`).join('')}</div>
       <p class="note">Los puntos de una tarea cuentan cuando al menos 2 de los demás la califican con 👍 Bien hecha. La semana va de ${weekStartName()} a ${weekEndName()}. Quien tenga más puntos el ${weekEndName()} a la medianoche gana el premio para la semana siguiente. Si hay empate, ganan los dos.</p>
       ${hist.length ? `<div class="sec-h"><h2>Salón de la fama</h2></div><div class="hof">${hist.map(h => `<div class="hof-row t-${safeColor(h.win[0].m.color)}">${avatar(h.win[0].m, 'sm')}<span class="grow"><span class="wk">${weekRange(h.w)}</span><br><b>${esc(joinNames(h.win.map(x => x.m.name)))}</b>${h.prize ? `<span class="hp"> · ${esc(h.prize)}</span>` : ''}</span><span class="rp">${h.win[0].pts} pts</span></div>`).join('')}</div>` : ''}
     `;
@@ -3023,13 +3035,13 @@ async function completeTask(id, btn){
   const now = new Date().toISOString();
   const ok = await write(() => DB.doc('tasks/' + id).update({done:true, doneBy:S.me, doneAt:now}));
   let nextRef = null;
-  if(ok && (t.repeat === 'daily' || t.repeat === 'weekly')){
+  if(ok && repKind(t)){
     const base = t.due ? parseYmd(t.due) : today();
     const from = base > today() ? base : today();
-    const next = addDays(from, t.repeat === 'daily' ? 1 : 7);
+    const next = nextDue(t, from);
     nextRef = DB.collection('tasks').doc();
     const r = nextRef;
-    const ok2 = await write(() => r.set({title:t.title, room:t.room, diff:t.diff, points:pts, assignee:t.assignee || null, due:ymd(next), repeat:t.repeat, done:false, doneBy:null, doneAt:null, createdBy:t.createdBy || S.me, createdAt:now, repeatOf:id}));
+    const ok2 = await write(() => r.set({title:t.title, room:t.room, diff:t.diff, points:pts, assignee:t.assignee || null, due:ymd(next), repeat:t.repeat, days:repeatDays(t), done:false, doneBy:null, doneAt:null, createdBy:t.createdBy || S.me, createdAt:now, repeatOf:id}));
     if(!ok2) nextRef = null;
   }
   S.completing.delete(id);
@@ -3127,27 +3139,72 @@ function closeSheet(instant){
   try { st.lastFocus && st.lastFocus.focus && st.lastFocus.focus({preventScroll:true}); } catch {}
 }
 
+/* Repetir: cada cuánto vuelve a aparecer una tarea cuando se marca como hecha */
+const REPEATS = {
+  none:   {label:'No se repite'},
+  daily:  {label:'Cada día', chip:'Diaria', step:1},
+  alt:    {label:'Día de por medio', chip:'Día de por medio', step:2},
+  '2w':   {label:'2 veces por semana', n:2, def:[1, 4]},
+  '3w':   {label:'3 veces por semana', n:3, def:[1, 3, 5]},
+  weekly: {label:'Cada semana', chip:'Semanal', step:7},
+};
+const DAY_SHORT = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const repKind = t => REPEATS[t && t.repeat] && t.repeat !== 'none' ? t.repeat : null;
+function repeatDays(t){
+  const R = REPEATS[t && t.repeat]; if(!R || !R.n) return null;
+  const ds = Array.isArray(t.days) ? [...new Set(t.days.map(Number).filter(n => Number.isInteger(n) && n >= 0 && n <= 6))] : [];
+  return (ds.length === R.n ? ds : R.def).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+}
+function repeatChip(t){
+  const k = repKind(t); if(!k) return '';
+  const R = REPEATS[k], ds = repeatDays(t);
+  const txt = ds ? cap(ds.map(d => DAY_SHORT[d]).join(', ').replace(/, ([^,]+)$/, ' y $1')) : R.chip;
+  return `<span class="chip ghost">${ICON.repeat}${esc(txt)}</span>`;
+}
+// Siguiente fecha de una tarea repetida, contando desde `from`
+function nextDue(t, from){
+  const k = repKind(t); if(!k) return null;
+  const R = REPEATS[k];
+  if(R.step) return addDays(from, R.step);
+  const ds = repeatDays(t);
+  for(let i = 1; i <= 7; i++){ const x = addDays(from, i); if(ds.includes(x.getDay())) return x; }
+  return addDays(from, 7);
+}
+
+/* Nueva tarea / Editar tarea.
+   Al crear se pueden elegir varios lugares y varias personas (o Todos): se crea una tarea
+   por cada lugar y por cada persona, y cada quien gana sus puntos. Al editar es una sola tarea. */
 function openTaskSheet(existing, preset){
   if(!existing && needMe()) return;
   const isEdit = !!existing;
+  const firstRoom = (preset && preset.room) || S.taskRoom || 'cocina';
   const d = isEdit
-    ? {title:existing.title, room:existing.room, diff:DIFFS[existing.diff] ? existing.diff : 'media', assignee:existing.assignee || null, due:existing.due || null, repeat:existing.repeat || 'none'}
-    : {title:'', room:(preset && preset.room) || S.taskRoom || 'cocina', diff:'media', assignee:null, due:ymd(today()), repeat:'none'};
+    ? {title:existing.title, rooms:[existing.room], diff:DIFFS[existing.diff] ? existing.diff : 'media', who:existing.assignee ? [existing.assignee] : [], due:existing.due || null, repeat:repKind(existing) || 'none', days:repeatDays(existing)}
+    : {title:'', rooms:[firstRoom], diff:'media', who:[], due:ymd(today()), repeat:'none', days:null};
   let armed = false, busy = false;
+  const ids = () => S.members.map(m => m.id);
+  const allPicked = () => S.members.length > 1 && ids().every(id => d.who.includes(id));
+  const count = () => d.rooms.length * Math.max(1, d.who.length);
   const opts = () => {
-    const dk = dueKeyOf(d.due);
+    const dk = dueKeyOf(d.due), R = REPEATS[d.repeat];
+    const lh = t => isEdit ? '' : `<span class="lh">${t}</span>`;
+    const n = count();
     return `
-    <div class="field"><span class="label">¿Dónde?</span><div class="opts">${allRooms().map(r => `<button type="button" class="opt t-${safeColor(r.color)}" data-f="room" data-v="${esc(r.id)}" aria-pressed="${d.room === r.id}"><span class="oe">${esc(r.emoji)}</span>${esc(r.name)}</button>`).join('')}</div></div>
-    <div class="field"><span class="label">Dificultad</span><div class="diffs">${Object.entries(DIFFS).map(([k, x]) => `<button type="button" class="diff d-${k}" data-f="diff" data-v="${k}" aria-pressed="${d.diff === k}"><b>+${x.pts}</b><span>${x.label}</span><small>${x.hint}</small></button>`).join('')}</div></div>
-    <div class="field"><span class="label">¿A quién le toca?</span><div class="opts">
-      <button type="button" class="opt" data-f="who" data-v="" aria-pressed="${!d.assignee}">${ICON.users}Cualquiera</button>
-      ${S.members.map(m => `<button type="button" class="opt t-${safeColor(m.color)}" data-f="who" data-v="${esc(m.id)}" aria-pressed="${d.assignee === m.id}">${avatar(m, 'xxs')}${esc(m.name)}</button>`).join('')}
+    <div class="field"><span class="label">¿Dónde?${lh('Puedes elegir varios')}</span><div class="opts">${allRooms().map(r => `<button type="button" class="opt t-${safeColor(r.color)}" data-f="room" data-v="${esc(r.id)}" aria-pressed="${d.rooms.includes(r.id)}"><span class="oe">${esc(r.emoji)}</span>${esc(r.name)}</button>`).join('')}</div></div>
+    <div class="field"><span class="label">Dificultad</span><div class="diffs">${Object.entries(DIFFS).map(([k, x]) => `<button type="button" class="diff d-${k}" data-f="diff" data-v="${k}" aria-pressed="${d.diff === k}"><b>+${x.pts}</b><span>${x.label}</span></button>`).join('')}</div></div>
+    <div class="field"><span class="label">¿A quién le toca?${lh('Puedes elegir varios')}</span><div class="opts">
+      <button type="button" class="opt" data-f="who" data-v="" aria-pressed="${!d.who.length}">${ICON.users}Cualquiera</button>
+      ${!isEdit && S.members.length > 1 ? `<button type="button" class="opt" data-f="who-all" aria-pressed="${allPicked()}"><span class="avstack">${S.members.slice(0, 4).map(m => avatar(m, 'xxs')).join('')}</span>Todos</button>` : ''}
+      ${S.members.map(m => `<button type="button" class="opt t-${safeColor(m.color)}" data-f="who" data-v="${esc(m.id)}" aria-pressed="${d.who.includes(m.id)}">${avatar(m, 'xxs')}${esc(m.name)}</button>`).join('')}
     </div></div>
     <div class="field"><span class="label">¿Para cuándo?</span><div class="opts">
       ${[['today', 'Hoy'], ['tomorrow', 'Mañana'], ['week', 'Esta semana'], ['none', 'Sin fecha']].map(([k, l]) => `<button type="button" class="opt" data-f="due" data-v="${k}" aria-pressed="${dk === k}">${l}</button>`).join('')}
       <label class="opt date-opt" data-on="${dk === 'custom'}">${ICON.cal}<span>${dk === 'custom' ? esc(short(parseYmd(d.due))) : 'Otra fecha'}</span><input type="date" id="tfDate" value="${esc(d.due || '')}" aria-label="Elegir otra fecha"></label>
     </div></div>
-    <div class="field"><span class="label">Repetir</span><div class="opts">${[['none', 'No se repite'], ['daily', 'Cada día'], ['weekly', 'Cada semana']].map(([k, l]) => `<button type="button" class="opt" data-f="repeat" data-v="${k}" aria-pressed="${d.repeat === k}">${k !== 'none' ? ICON.repeat : ''}${l}</button>`).join('')}</div></div>`;
+    <div class="field"><span class="label">Repetir</span><div class="opts">${Object.entries(REPEATS).map(([k, x]) => `<button type="button" class="opt" data-f="repeat" data-v="${k}" aria-pressed="${d.repeat === k}">${k !== 'none' ? ICON.repeat : ''}${x.label}</button>`).join('')}</div>
+      ${R && R.n ? `<div class="rep-days"><div class="days" role="group" aria-label="Días en que se repite">${[1, 2, 3, 4, 5, 6, 0].map(x => `<button type="button" data-f="rday" data-v="${x}" aria-pressed="${d.days.includes(x)}" aria-label="${cap(DAY_NAMES[x])}">${['D', 'L', 'M', 'M', 'J', 'V', 'S'][x]}</button>`).join('')}</div></div><p class="note" style="margin:2px 2px 0">Cuando la marquen como hecha, vuelve a aparecer el siguiente ${[...d.days].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(x => DAY_NAMES[x]).join(' o ')}. Toca otro día para cambiarlo.</p>` : ''}
+    </div>
+    ${n > 1 ? `<p class="make-n">${ICON.tasks}<span>Se van a crear <b>${n} tareas</b>: ${d.rooms.length > 1 ? `una en cada lugar${d.who.length > 1 ? ' y ' : ''}` : ''}${d.who.length > 1 ? 'una para cada persona' : ''}.</span></p>` : ''}`;
   };
   openSheet({
     title: isEdit ? 'Editar tarea' : 'Nueva tarea',
@@ -3162,7 +3219,8 @@ function openTaskSheet(existing, preset){
     onMount(sheet){
       const paint = () => {
         $('#tfOpts').innerHTML = opts();
-        $('#tfSubmit').innerHTML = `${isEdit ? 'Guardar cambios' : 'Crear tarea'} · +${DIFFS[d.diff].pts} pts`;
+        const n = count();
+        $('#tfSubmit').innerHTML = isEdit ? `Guardar cambios · +${DIFFS[d.diff].pts} pts` : n > 1 ? `Crear ${n} tareas · +${DIFFS[d.diff].pts} pts c/u` : `Crear tarea · +${DIFFS[d.diff].pts} pts`;
       };
       paint();
       sheet.onclick = async e => {
@@ -3170,12 +3228,26 @@ function openTaskSheet(existing, preset){
         const b = e.target.closest('[data-f]');
         if(!b) return;
         const f = b.dataset.f, v = b.dataset.v;
-        if(f === 'room') d.room = v;
+        if(f === 'room'){
+          if(isEdit) d.rooms = [v];
+          else if(d.rooms.includes(v)){ if(d.rooms.length > 1) d.rooms = d.rooms.filter(x => x !== v); }
+          else d.rooms = [...d.rooms, v];
+        }
         else if(f === 'diff') d.diff = v;
-        else if(f === 'who') d.assignee = v || null;
+        else if(f === 'who'){
+          if(!v) d.who = [];
+          else if(isEdit) d.who = [v];
+          else d.who = d.who.includes(v) ? d.who.filter(x => x !== v) : [...d.who, v];
+        }
+        else if(f === 'who-all') d.who = allPicked() ? [] : ids();
         else if(f === 'due') d.due = dueFromKey(v);
-        else if(f === 'repeat') d.repeat = v;
-        else if(f === 'chore'){ const c = CHORES[+v]; $('#tfTitle').value = c.t; d.room = choreRoom(c); d.diff = c.d; $('#tfErr').hidden = true; $('#tfTitle').classList.remove('bad'); }
+        else if(f === 'repeat'){ d.repeat = v; d.days = REPEATS[v].n ? (d.days && d.days.length === REPEATS[v].n ? d.days : [...REPEATS[v].def]) : null; }
+        else if(f === 'rday'){
+          // siempre quedan los días justos: si ya están completos, el nuevo reemplaza al más antiguo
+          const x = +v;
+          if(!d.days.includes(x)){ d.days = [...d.days, x]; if(d.days.length > REPEATS[d.repeat].n) d.days.shift(); }
+        }
+        else if(f === 'chore'){ const c = CHORES[+v]; $('#tfTitle').value = c.t; d.rooms = [choreRoom(c)]; d.diff = c.d; $('#tfErr').hidden = true; $('#tfTitle').classList.remove('bad'); }
         else if(f === 'delete'){
           if(!armed){ armed = true; b.classList.add('armed'); b.innerHTML = `${ICON.trash}Toca otra vez para eliminar`; return; }
           const backup = {...existing}; delete backup.id;
@@ -3193,13 +3265,25 @@ function openTaskSheet(existing, preset){
         const title = $('#tfTitle').value.trim().replace(/\s+/g, ' ');
         if(!title){ $('#tfErr').hidden = false; $('#tfTitle').classList.add('bad'); $('#tfTitle').focus(); return; }
         busy = true; $('#tfSubmit').disabled = true;
-        const data = {title: cap(title), room:d.room, diff:d.diff, points:DIFFS[d.diff].pts, assignee:d.assignee || null, due:d.due || null, repeat:d.repeat};
-        let ok;
-        if(isEdit) ok = await write(() => DB.doc('tasks/' + existing.id).update({...data, editedBy:S.me || null}));
-        else { const ref = DB.collection('tasks').doc(); ok = await write(() => ref.set({...data, done:false, doneBy:null, doneAt:null, createdBy:S.me, createdAt:new Date().toISOString()})); }
+        const base = {title: cap(title), diff:d.diff, points:DIFFS[d.diff].pts, due:d.due || null, repeat:d.repeat, days: REPEATS[d.repeat].n ? [...d.days] : null};
+        let ok = true, made = 0;
+        if(isEdit) ok = await write(() => DB.doc('tasks/' + existing.id).update({...base, room:d.rooms[0], assignee:d.who[0] || null, editedBy:S.me || null}));
+        else {
+          const now = new Date().toISOString();
+          for(const room of d.rooms){
+            for(const who of (d.who.length ? d.who : [null])){
+              const ref = DB.collection('tasks').doc();
+              ok = await write(() => ref.set({...base, room, assignee:who, done:false, doneBy:null, doneAt:null, createdBy:S.me, createdAt:now}));
+              if(!ok) break;
+              made++;
+            }
+            if(!ok) break;
+          }
+        }
         busy = false;
         const sb = $('#tfSubmit'); if(sb) sb.disabled = false;
-        if(ok){ closeSheet(); toast(isEdit ? 'Cambios guardados' : `Tarea creada: ${data.title}`, {tone:'mint', ms:2400}); }
+        if(ok){ closeSheet(); toast(isEdit ? 'Cambios guardados' : made > 1 ? `Se crearon ${made} tareas: ${base.title}` : `Tarea creada: ${base.title}`, {tone:'mint', ms:2400}); }
+        else if(made){ closeSheet(); toast(`Solo se crearon ${made} de ${count()} tareas. Revisa tu conexión y crea las que faltan.`, {tone:'sun', ms:5200}); }
       };
       $('#tfTitle').addEventListener('input', () => { $('#tfErr').hidden = true; $('#tfTitle').classList.remove('bad'); });
       if(!isEdit) setTimeout(() => $('#tfTitle')?.focus({preventScroll:true}), 320);
