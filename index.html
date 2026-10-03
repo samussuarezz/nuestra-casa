@@ -100,7 +100,7 @@ h1,h2,h3,p{margin:0}
 .blobs i:nth-child(2){width:280px;height:280px;background:var(--c-pink);top:-90px;right:-150px;opacity:calc(var(--blob-op)*.55)}
 .blobs i:nth-child(3){width:320px;height:320px;background:var(--c-mint);bottom:-190px;left:10%;opacity:calc(var(--blob-op)*.45)}
 
-.app{position:relative;z-index:1;max-width:560px;margin-inline:auto;padding-inline:16px;padding-block:0 calc(118px + env(safe-area-inset-bottom,0px))}
+.app{position:relative;z-index:1;max-width:560px;margin-inline:auto;padding-inline:16px;padding-block:0 calc(104px + env(safe-area-inset-bottom,0px))}
 
 /* ---------- top bar ---------- */
 .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:8px;margin-inline:-16px;padding:10px 16px;background:color-mix(in oklab,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5)}
@@ -444,7 +444,7 @@ h1,h2,h3,p{margin:0}
 .ob-chip button svg{width:16px;height:16px}
 
 /* ---------- toast + fx ---------- */
-.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(98px + env(safe-area-inset-bottom,0px));z-index:80;width:min(528px,calc(100% - 32px));display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:80;width:min(528px,calc(100% - 32px));display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{pointer-events:auto;display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 8px 8px 14px;border-radius:18px;background:var(--toast-bg);color:var(--toast-fg);font-weight:800;font-size:14.5px;box-shadow:0 14px 30px -12px rgba(0,0,0,.5);animation:toastIn .32s cubic-bezier(.2,.9,.3,1.2)}
 .toast::before{content:"";width:10px;height:10px;flex:none;border-radius:50%;background:var(--tone)}
 .toast span{flex:1;min-width:0}
@@ -510,7 +510,7 @@ html{background:var(--bg)}
 }
 
 /* Inicio: ilustración arriba + hoja redondeada encima */
-.home .hero{position:relative;margin:-64px -16px 0;padding:70px 16px 34px;overflow:hidden;background:linear-gradient(180deg,color-mix(in oklab,var(--tone) 24%,var(--bg)) 0%,color-mix(in oklab,var(--tone) 11%,var(--bg)) 58%,color-mix(in oklab,var(--c-sun) 16%,var(--bg)) 100%)}
+.home .hero{position:relative;margin:-64px -16px 0;padding:70px 16px 34px;overflow:hidden;background:linear-gradient(180deg,var(--hero-top,color-mix(in oklab,var(--tone) 24%,var(--bg))) 0%,color-mix(in oklab,var(--tone) 11%,var(--bg)) 58%,color-mix(in oklab,var(--c-sun) 16%,var(--bg)) 100%)}
 .home .hero::after{content:"";position:absolute;width:260px;height:260px;right:-90px;top:-80px;border-radius:50%;background:color-mix(in oklab,var(--tone) 30%,transparent);filter:blur(60px);opacity:.55;pointer-events:none}
 .hero-sub{margin-top:12px;font-size:14.5px;font-weight:700;color:var(--ink-2);max-width:34ch}
 .home .hello .nm{text-underline-offset:6px}
@@ -574,6 +574,69 @@ body[data-tab="inicio"]:not(.scrolled) .topbar{background:transparent;-webkit-ba
 .brand{min-width:0;white-space:nowrap}
 .brand span{overflow:hidden;text-overflow:ellipsis}
 html.calm *,html.calm *::before,html.calm *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+
+/* ---------- v4: bordes del iPhone, transiciones, revisión ---------- */
+/* Barra de menú pegada abajo, con la zona del indicador de inicio adentro */
+.tabbar{left:0;right:0;width:auto;transform:none;padding:0 0 max(6px,env(safe-area-inset-bottom,0px));background:color-mix(in oklab,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border-top:1px solid var(--line);box-shadow:0 -10px 30px -22px rgba(29,25,52,.45)}
+.tabbar-in{max-width:560px;margin-inline:auto;height:62px;padding:0 6px;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.tab{height:58px}
+.tab .ind{position:absolute;inset:5px 10px;border-radius:16px;background:color-mix(in oklab,var(--tone) 13%,transparent);view-transition-name:tabind;z-index:-1}
+.tab{isolation:isolate}
+.fab{margin-top:-34px;box-shadow:0 12px 24px -8px color-mix(in oklab,var(--c-pink) 70%,transparent),0 0 0 5px var(--surface)}
+
+/* Íconos dentro de botones: tamaño por defecto (arregla el ícono gigante en "Guardar premio") */
+:where(button) svg{width:20px;height:20px}
+.btn-primary svg{width:22px;height:22px;flex:none}
+
+/* Transición entre secciones */
+#view{view-transition-name:view}
+.topbar{view-transition-name:topbar}
+.tabbar{view-transition-name:tabbar}
+::view-transition-group(view){animation-duration:.42s;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+::view-transition-old(view){animation:vtOutL .22s cubic-bezier(.4,0,1,1) both}
+::view-transition-new(view){animation:vtInR .42s cubic-bezier(.2,.85,.25,1) both}
+html[data-dir="back"]::view-transition-old(view){animation-name:vtOutR}
+html[data-dir="back"]::view-transition-new(view){animation-name:vtInL}
+::view-transition-group(tabind){animation-duration:.42s;animation-timing-function:cubic-bezier(.3,1.25,.5,1)}
+::view-transition-old(topbar),::view-transition-new(topbar),::view-transition-old(tabbar),::view-transition-new(tabbar){animation-duration:.2s}
+@keyframes vtOutL{to{opacity:0;transform:translateX(-26px)}}
+@keyframes vtOutR{to{opacity:0;transform:translateX(26px)}}
+@keyframes vtInR{from{opacity:0;transform:translateX(34px)}}
+@keyframes vtInL{from{opacity:0;transform:translateX(-34px)}}
+html.vt .view>section{animation:none}
+html:not(.vt)[data-dir="fwd"] .view>section{animation:vtInR .38s cubic-bezier(.2,.85,.25,1) both}
+html:not(.vt)[data-dir="back"] .view>section{animation:vtInL .38s cubic-bezier(.2,.85,.25,1) both}
+
+/* Revisión de tareas */
+.sec-h .count{min-width:26px;height:26px;padding:0 8px;border-radius:999px;display:grid;place-items:center;background:var(--c-pink);color:#fff;font-family:var(--font-display);font-weight:800;font-size:13.5px}
+.sec-p{margin:-4px 2px 10px;font-size:13.5px;font-weight:700;color:var(--ink-3)}
+.rv-card{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:22px;background:var(--surface);box-shadow:var(--shadow-sm);border-left:4px solid var(--tone)}
+.rv-top,.rv-head{display:flex;align-items:center;gap:10px;width:100%;text-align:left}
+.rv-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rv-txt b{font-weight:900;font-size:15.5px;line-height:1.25;overflow-wrap:anywhere}
+.rv-txt>span{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.rv-txt q{display:block;margin-top:4px;padding:8px 10px;border-radius:12px;background:var(--surface-2);font-size:14px;font-weight:700;color:var(--ink-2);quotes:none}
+.votes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.vote{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;padding:6px 4px;border-radius:16px;background:color-mix(in oklab,var(--tone) 11%,var(--surface));color:color-mix(in oklab,var(--tone) 55%,var(--ink));font-weight:800;font-size:12.5px;text-align:center;line-height:1.15;border:2px solid transparent;transition:transform .15s,border-color .15s,background .15s}
+.vote .ve{font-size:24px;line-height:1}
+.vote:active{transform:scale(.95)}
+.vote.big{min-height:78px;font-size:13.5px}
+.vote.big .ve{font-size:30px}
+.vote[aria-pressed="true"]{border-color:var(--tone);background:color-mix(in oklab,var(--tone) 22%,var(--surface));color:var(--ink)}
+.rv-note{margin:-2px 2px 0;font-size:12.5px;font-weight:800;color:var(--ink-3)}
+.rv-head{padding:12px;border-radius:20px;background:color-mix(in oklab,var(--tone) 10%,var(--surface-2))}
+.rv-state{margin-top:12px;padding:10px 14px;border-radius:16px;font-size:14px;font-weight:800;background:color-mix(in oklab,var(--tone) 14%,var(--surface));color:color-mix(in oklab,var(--tone) 55%,var(--ink))}
+.rv-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.rv-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:16px;background:var(--surface-2)}
+.rv-item .rv-txt>span{color:color-mix(in oklab,var(--tone) 60%,var(--ink));font-weight:800;font-size:13.5px}
+.input.ta{height:auto;min-height:88px;padding:12px 16px;line-height:1.4;resize:none;font-size:16px;font-family:var(--font-body)}
+#iReview .sec-h{margin-top:14px}
+#iReview .tasks{margin-bottom:4px}
+.pts.pend{opacity:.55}
+.pts.lost{opacity:.45;text-decoration:line-through}
+.rvf{display:inline-flex;align-items:center;gap:2px;height:26px;padding:0 7px 0 3px;border-radius:999px;background:var(--surface-2);font-size:13px}
+.rvf i{font-style:normal}
+.task.done .task-body{text-align:left}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -867,15 +930,43 @@ function avatar(m, size = ''){
   return `<span class="av ${size} t-${safeColor(m.color)}" aria-hidden="true">${inner}</span>`;
 }
 
+/* ---------- Revisión entre todos ----------
+   Cuando alguien termina una tarea, los demás la califican con una carita.
+   Los puntos cuentan cuando al menos 2 de los demás dicen "Bien hecha".
+   Las tareas hechas antes de esta función cuentan solas. */
+const REVIEW_SINCE = '2026-10-03T16:20:00Z';
+const VOTES = {
+  ok:  {emo:'👍', label:'Bien hecha', tone:'mint'},
+  meh: {emo:'🤏', label:'Le faltó algo', tone:'sun'},
+  bad: {emo:'👎', label:'Mal hecha', tone:'red'},
+};
+function reviewState(t){
+  if(!t.doneAt || t.doneAt < REVIEW_SINCE) return {status:'ok', legacy:true, need:0, oks:0, nos:0, revs:[], others:[]};
+  const others = S.members.filter(m => m.id !== t.doneBy);
+  const need = Math.min(2, others.length);
+  const revs = others.map(m => { const r = t['rv_' + m.id]; return r && VOTES[r.v] ? {m, v:r.v, c:String(r.c || '').slice(0, 200), at:r.at} : null; }).filter(Boolean);
+  const oks = revs.filter(r => r.v === 'ok').length, nos = revs.length - oks;
+  const status = oks >= need ? 'ok' : nos > others.length - need ? 'no' : 'wait';
+  return {status, legacy:false, need, oks, nos, revs, others};
+}
+const rvClear = t => Object.fromEntries(Object.keys(t).filter(k => k.startsWith('rv_')).map(k => [k, null]));
+function toReview(){
+  if(!S.me) return [];
+  const since = Date.now() - 14 * 864e5;
+  return S.done.filter(t => t.doneBy && t.doneBy !== S.me && !t['rv_' + S.me] && Date.parse(t.doneAt) > since && reviewState(t).status === 'wait')
+    .sort((a, b) => String(b.doneAt).localeCompare(String(a.doneAt)));
+}
+
 function scoresFor(wid){
   const acc = {};
-  S.members.forEach(m => acc[m.id] = {pts:0, count:0});
+  S.members.forEach(m => acc[m.id] = {pts:0, count:0, pend:0});
   for(const t of S.done){
     if(!t.doneAt || weekIdOf(t.doneAt) !== wid) continue;
     const a = acc[t.doneBy];
     if(!a) continue;
-    a.pts += Number(t.points) || 0;
-    a.count++;
+    const st = reviewState(t).status;
+    if(st === 'ok'){ a.pts += Number(t.points) || 0; a.count++; }
+    else if(st === 'wait') a.pend += Number(t.points) || 0;
   }
   return S.members.map(m => ({m, ...acc[m.id]}))
     .sort((a, b) => b.pts - a.pts || b.count - a.count || a.m.name.localeCompare(b.m.name, 'es'));
@@ -1217,9 +1308,9 @@ function subscribe(){
 
   const cutoff = addDays(weekStart(new Date()), -7 * 8).toISOString();
   DB.collection('tasks').where('doneAt', '>=', cutoff).onSnapshot(s => {
-    const prev = S.doneLoaded ? new Set(S.done.map(t => t.id)) : null;
+    const prev = S.doneLoaded ? new Map(S.done.map(t => [t.id, t])) : null;
     S.done = s.docs.map(d => ({id: d.id, ...d.data()})).filter(t => t.done);
-    if(prev) announceDone(S.done.filter(t => !prev.has(t.id)));
+    if(prev){ announceDone(S.done.filter(t => !prev.has(t.id))); announceReviews(prev); }
     S.doneLoaded = true;
     render();
   }, onSubError);
@@ -1252,9 +1343,31 @@ function announceDone(list){
   if(!fresh.length || !S.me) return;
   for(const t of fresh.slice(0, 2)){
     const m = memberById(t.doneBy); if(!m) continue;
-    toast(`${m.name} hizo «${t.title}» · +${Number(t.points) || 0} pts`, {tone:m.color, ms:3800});
+    toast(`${m.name} hizo «${t.title}». ¿Quedó bien?`, {tone:m.color, action:{label:'Calificar', fn: () => openReviewSheet(t.id)}});
   }
   if(!document.hidden) setTimeout(() => burst(innerWidth / 2, 90, memberById(fresh[0].doneBy)?.color), 120);
+}
+
+/* Avisos para quien hizo la tarea cuando los demás la califican */
+function announceReviews(prev){
+  if(!S.me) return;
+  for(const t of S.done){
+    if(t.doneBy !== S.me) continue;
+    const old = prev.get(t.id); if(!old) continue;
+    const before = reviewState(old), now = reviewState(t);
+    for(const r of now.revs){
+      const o = old['rv_' + r.m.id];
+      if(o && o.v === r.v && (o.c || '') === r.c) continue;
+      if(Date.now() - Date.parse(r.at || 0) > 5 * 60e3) continue;
+      toast(`${r.m.name} calificó «${t.title}»: ${VOTES[r.v].emo} ${VOTES[r.v].label}${r.c ? ` · "${r.c.slice(0, 60)}"` : ''}`, {tone:VOTES[r.v].tone, action:{label:'Ver', fn: () => openReviewSheet(t.id)}});
+    }
+    if(before.status !== 'ok' && now.status === 'ok'){
+      toast(`¡Aprobada! +${Number(t.points) || 0} pts por «${t.title}»`, {tone:'mint', ms:4200});
+      if(!document.hidden) setTimeout(() => burst(innerWidth / 2, 90, meM()?.color), 150);
+    } else if(before.status !== 'no' && now.status === 'no'){
+      toast(`«${t.title}» no fue aprobada. Revisa los comentarios.`, {tone:'red', action:{label:'Ver', fn: () => openReviewSheet(t.id)}});
+    }
+  }
 }
 
 /* ---------- Instalar como app ---------- */
@@ -1321,6 +1434,46 @@ async function boot(){
 /* =========================================================
    Render
    ========================================================= */
+/* Cambio de sección: desliza hacia el lado de la pestaña (View Transitions donde exista) */
+const TAB_ORDER = ['inicio', 'tareas', 'ranking', 'mercado'];
+const canVT = typeof document.startViewTransition === 'function';
+if(canVT) document.documentElement.classList.add('vt');
+function switchTab(t){
+  const dir = TAB_ORDER.indexOf(t) >= TAB_ORDER.indexOf(S.tab) ? 'fwd' : 'back';
+  const root = document.documentElement;
+  root.dataset.dir = dir;
+  const go = () => { S.tab = t; doRender(); window.scrollTo({top:0}); };
+  if(canVT && !reduceMotion() && !document.hidden){
+    try {
+      const vt = document.startViewTransition(go);
+      vt.finished.finally(() => { if(root.dataset.dir === dir) delete root.dataset.dir; });
+      return;
+    } catch {}
+  }
+  go();
+  setTimeout(() => { if(root.dataset.dir === dir) delete root.dataset.dir; }, 450);
+}
+
+/* La barra de estado del iPhone (y Android) toma el color de lo que hay detrás */
+const hexRGB = h => { h = String(h || '').trim().replace('#', ''); if(h.length === 3) h = h.replace(/./g, c => c + c); const n = parseInt(h.slice(0, 6), 16); return isNaN(n) ? null : [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const mixHex = (a, b, p) => { const x = hexRGB(a), y = hexRGB(b); if(!x || !y) return b; return '#' + x.map((v, i) => Math.round(v * p + y[i] * (1 - p)).toString(16).padStart(2, '0')).join(''); };
+let chromeKey = '';
+function syncChrome(){
+  const cs = getComputedStyle(document.documentElement);
+  const bg = cs.getPropertyValue('--bg').trim() || '#F3F0FA';
+  const tone = cs.getPropertyValue('--c-' + safeColor(meM()?.color || 'grape')).trim();
+  const heroTop = mixHex(tone, bg, .24);
+  let top = bg;
+  if(S.tab === 'inicio' && $('#gate').hidden && !document.body.classList.contains('scrolled')) top = heroTop;
+  if(sheetState) top = mixHex('#140F28', top, .42);
+  const key = heroTop + top;
+  if(key === chromeKey) return;
+  chromeKey = key;
+  document.documentElement.style.setProperty('--hero-top', heroTop);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = top; });
+}
+if(window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { chromeKey = ''; syncChrome(); });
+
 let raf = 0;
 function render(){ if(raf) return; raf = requestAnimationFrame(() => { raf = 0; doRender(); }); }
 function doRender(){
@@ -1329,6 +1482,7 @@ function doRender(){
   renderView();
   renderTabs();
   renderGate();
+  syncChrome();
 }
 
 function renderTop(){
@@ -1346,8 +1500,8 @@ function renderBanner(){
 
 function renderTabs(){
   const pend = S.pending.length, buy = toBuy().length;
-  const tab = (id, label, icon, badge, tone) => `<button class="tab t-${tone}" data-act="tab" data-tab="${id}" ${S.tab === id ? 'aria-current="page"' : ''}>${icon}<span>${label}</span>${badge ? `<i class="badge" aria-label="${badge} pendientes">${badge > 99 ? '99+' : badge}</i>` : ''}</button>`;
-  const html = tab('inicio', 'Inicio', ICON.home, 0, 'grape') + tab('tareas', 'Tareas', ICON.tasks, pend, 'tangerine')
+  const tab = (id, label, icon, badge, tone) => `<button class="tab t-${tone}" data-act="tab" data-tab="${id}" ${S.tab === id ? 'aria-current="page"' : ''}>${S.tab === id ? '<i class="ind" aria-hidden="true"></i>' : ''}${icon}<span>${label}</span>${badge ? `<i class="badge" aria-label="${badge} pendientes">${badge > 99 ? '99+' : badge}</i>` : ''}</button>`;
+  const html = tab('inicio', 'Inicio', ICON.home, toReview().length, 'grape') + tab('tareas', 'Tareas', ICON.tasks, pend, 'tangerine')
     + `<button class="fab" data-act="open-add" aria-label="${S.tab === 'mercado' ? 'Añadir al mercado' : 'Nueva tarea'}">${ICON.plus}</button>`
     + tab('ranking', 'Ranking', ICON.trophy, 0, 'sun') + tab('mercado', 'Mercado', ICON.cart, buy, 'mint');
   const el = $('#tabs');
@@ -1478,14 +1632,18 @@ function doneCard(t, canUndo){
   const r = roomById(t.room);
   const by = memberById(t.doneBy);
   const dk = DIFFS[t.diff] ? t.diff : 'media';
+  const st = reviewState(t);
+  const stChip = st.legacy ? '' : st.status === 'ok' ? `<span class="chip t-mint">✓ Aprobada</span>` : st.status === 'no' ? `<span class="chip t-red">✗ No aprobada</span>` : `<span class="chip t-sun">En revisión · ${st.oks}/${st.need} 👍</span>`;
+  const faces = st.revs.map(x => `<span class="rvf" title="${esc(x.m.name)}: ${VOTES[x.v].label}">${avatar(x.m, 'xxs')}<i>${VOTES[x.v].emo}</i></span>`).join('');
   return `<div class="task done t-${safeColor(r.color)}">
     <span class="check on" aria-hidden="true">${ICON.check}</span>
-    <span class="task-body">
+    <button class="task-body" data-act="review-open" data-id="${esc(t.id)}" aria-label="Ver revisión de ${esc(t.title)}">
       <span class="task-title">${esc(t.title)}</span>
       <span class="meta"><span class="chip">${esc(r.emoji)} ${esc(r.name)}</span><span class="by">${avatar(by, 'xxs')}${esc(by?.name || 'Alguien')} · ${esc(relTime(t.doneAt))}</span></span>
-    </span>
+      ${stChip || faces ? `<span class="meta">${stChip}${faces}</span>` : ''}
+    </button>
     <span class="task-side">
-      <span class="pts d-${dk}">+${Number(t.points) || 0}</span>
+      <span class="pts d-${dk}${st.status === 'wait' ? ' pend' : st.status === 'no' ? ' lost' : ''}">+${Number(t.points) || 0}</span>
       ${canUndo ? `<button class="mini" data-act="reopen" data-id="${esc(t.id)}" aria-label="Deshacer: ${esc(t.title)} vuelve a pendientes">${ICON.undo}</button>` : ''}
     </span>
   </div>`;
@@ -1632,12 +1790,13 @@ function countUp(el, from, to){
 
 const Inicio = {
   shell: () => `<section class="home">
-    <div class="hero enter" id="iHero">
+    <div class="hero${Inicio._entered ? '' : ' enter'}" id="iHero">
       <div id="iHello"></div>
       <div class="iso-wrap" id="iHouse"></div>
       <div id="iWhole"></div>
     </div>
     <div class="home-sheet">
+    <div id="iReview"></div>
     <div class="bento" id="iBento"></div>
     <div id="iWinner"></div>
     <div class="sec-h"><h2>Para hoy</h2><button class="link" data-act="tab" data-tab="tareas">Ver todas</button></div>
@@ -1646,7 +1805,7 @@ const Inicio = {
     <div class="ranklist" id="iBoard"></div>
     </div>
   </section>`,
-  mount(){ setTimeout(() => $('#iHero')?.classList.remove('enter'), 1400); },
+  mount(){ Inicio._entered = true; setTimeout(() => $('#iHero')?.classList.remove('enter'), 1400); },
   update(){
     const me = meM();
     const wk = currentWeek();
@@ -1667,6 +1826,7 @@ const Inicio = {
     if(!leader || leader.pts === 0) sub = 'Nadie ha sumado puntos esta semana. Arranca tú.';
     else if(mine.pts === leader.pts){ const tied = sc.filter(s => s.pts === leader.pts).length; sub = tied > 1 ? `Empatado en el primer lugar. ¡Una tarea más y quedas solo!` : `Vas de primero con ${plural(mine.count, 'tarea', 'tareas')}. Defiende el premio.`; }
     else sub = `${leader.pts - mine.pts} pts detrás de ${leader.m.name}`;
+    if(mine.pend) sub += ` · +${mine.pend} esperando aprobación`;
 
     const prize = S.weeks[wk.id]?.prize;
     const todayList = S.pending.filter(t => t.due && t.due <= ymd(today()));
@@ -1718,6 +1878,12 @@ const Inicio = {
       wh += `<div class="install-card"><span class="ic">${ICON.phone}</span><p><b>Instálala en tu celular.</b> Queda con su ícono y se abre como una app normal.</p><div class="ia"><button class="btn-text" data-act="install">${installEvt ? 'Instalar' : 'Cómo'}</button><button class="mini" data-act="install-hide" aria-label="Ocultar">${ICON.close}</button></div></div>`;
     }
     setHTML($('#iWinner'), wh);
+
+    // Por revisar
+    const rv = toReview();
+    setHTML($('#iReview'), rv.length ? `<div class="sec-h"><h2>Por revisar</h2><span class="count">${rv.length}</span></div>
+      <p class="sec-p">Califica lo que hicieron los demás. Los puntos cuentan cuando 2 dicen que quedó bien.</p>
+      <div class="tasks">${rv.slice(0, 4).map(reviewCard).join('')}</div>${rv.length > 4 ? `<p class="note" style="text-align:center">y ${rv.length - 4} más en Tareas → Hechas</p>` : ''}` : '');
 
     // Para hoy
     const el = $('#iToday');
@@ -1812,6 +1978,75 @@ function planHTML(){
   </div>`;
 }
 
+function reviewCard(t){
+  const r = roomById(t.room), by = memberById(t.doneBy), st = reviewState(t);
+  return `<div class="rv-card t-${safeColor(by?.color)}">
+    <button class="rv-top" data-act="review-open" data-id="${esc(t.id)}" aria-label="Ver ${esc(t.title)}">
+      ${avatar(by, 'sm')}
+      <span class="rv-txt"><b>${esc(t.title)}</b><span>${esc(by?.name || 'Alguien')} · ${esc(relTime(t.doneAt))} · ${esc(r.emoji)} ${esc(r.name)}</span></span>
+      <span class="pts pend">+${Number(t.points) || 0}</span>
+    </button>
+    <div class="votes">${Object.entries(VOTES).map(([v, o]) => `<button class="vote t-${o.tone}" data-act="vote" data-id="${esc(t.id)}" data-v="${v}"><span class="ve" aria-hidden="true">${o.emo}</span>${o.label}</button>`).join('')}</div>
+    ${st.oks ? `<p class="rv-note">Ya lleva ${st.oks} de ${st.need} 👍</p>` : ''}
+  </div>`;
+}
+
+function reviewStatusHTML(t, st){
+  const by = memberById(t.doneBy), pts = Number(t.points) || 0;
+  if(st.legacy) return `<p class="rv-state t-mint">Se hizo antes de que existieran las revisiones, así que cuenta sola.</p>`;
+  if(st.status === 'ok') return `<p class="rv-state t-mint">✓ Aprobada. Los ${pts} pts ya cuentan para ${esc(by?.name || 'quien la hizo')}.</p>`;
+  if(st.status === 'no') return `<p class="rv-state t-red">✗ No fue aprobada y no suma puntos. ${esc(by?.name || 'Quien la hizo')} la puede volver a hacer.</p>`;
+  return `<p class="rv-state t-sun">En revisión: lleva ${st.oks} de ${st.need} 👍. Los ${pts} pts cuentan al llegar a ${st.need}.</p>`;
+}
+
+function openReviewSheet(id, preset){
+  const t = S.done.find(x => x.id === id);
+  if(!t){ toast('Esa tarea ya no está en la lista.', {tone:'gray', ms:2400}); return; }
+  if(needMe()) return;
+  const r = roomById(t.room), by = memberById(t.doneBy);
+  const st = reviewState(t);
+  const mine = t['rv_' + S.me];
+  const canVote = !st.legacy && S.me !== t.doneBy && memberById(S.me);
+  let v = preset || mine?.v || null;
+  const voteBtns = () => Object.entries(VOTES).map(([k, o]) => `<button type="button" class="vote big t-${o.tone}" data-f="v" data-v="${k}" aria-pressed="${v === k}"><span class="ve" aria-hidden="true">${o.emo}</span>${o.label}</button>`).join('');
+  openSheet({
+    title: canVote ? 'Calificar tarea' : 'Revisión de la tarea',
+    body: `<div class="rv-head t-${safeColor(by?.color)}">${avatar(by, 'md')}<span class="rv-txt"><b>${esc(t.title)}</b><span>${esc(by?.name || 'Alguien')} · ${esc(relTime(t.doneAt))} · ${esc(r.emoji)} ${esc(r.name)}</span></span><span class="pts">+${Number(t.points) || 0}</span></div>
+      ${reviewStatusHTML(t, st)}
+      ${st.revs.length ? `<div class="rv-list">${st.revs.map(x => `<div class="rv-item t-${VOTES[x.v].tone}">${avatar(x.m, 'xs')}<span class="rv-txt"><b>${esc(x.m.name)}${x.m.id === S.me ? ' (tú)' : ''}</b><span>${VOTES[x.v].emo} ${VOTES[x.v].label}</span>${x.c ? `<q>${esc(x.c)}</q>` : ''}</span></div>`).join('')}</div>`
+        : st.legacy ? '' : `<p class="note">Nadie la ha calificado todavía.</p>`}
+      ${canVote ? `<div class="field"><span class="label">${mine ? 'Tu calificación' : '¿Cómo quedó?'}</span><div class="votes" id="rvVotes">${voteBtns()}</div></div>
+        <label class="field"><span class="label">Comentario (opcional)</span><textarea class="input ta" id="rvC" maxlength="200" rows="3" placeholder="Ej: faltó barrer debajo del sofá">${esc(mine?.c || '')}</textarea></label>
+        <p class="form-err" id="rvErr" hidden>Escoge una carita.</p>
+        <button class="btn-primary" type="button" data-f="send">${mine ? 'Cambiar calificación' : 'Enviar calificación'}</button>` : ''}
+      ${S.me === t.doneBy && st.status === 'no' ? `<button class="btn-primary" type="button" data-f="redo">${ICON.undo}Volver a hacerla</button>` : ''}`,
+    onMount(sheet){
+      sheet.onclick = async e => {
+        const b = e.target.closest('[data-f]'); if(!b) return;
+        if(b.dataset.f === 'v'){ v = b.dataset.v; $('#rvVotes').innerHTML = voteBtns(); $('#rvErr').hidden = true; return; }
+        if(b.dataset.f === 'send'){
+          if(!v){ $('#rvErr').hidden = false; return; }
+          const c = ($('#rvC').value || '').trim().replace(/\s+/g, ' ').slice(0, 200);
+          b.disabled = true;
+          const before = reviewState(t).status;
+          const ok = await write(() => DB.doc('tasks/' + t.id).update({['rv_' + S.me]: {v, c, at: new Date().toISOString()}}));
+          b.disabled = false;
+          if(!ok) return;
+          closeSheet();
+          const now = S.done.find(x => x.id === t.id);
+          const after = now ? reviewState(now).status : before;
+          if(before !== 'ok' && after === 'ok') toast(`¡Aprobada! ${by?.name || 'Quien la hizo'} gana +${Number(t.points) || 0} pts.`, {tone:'mint', ms:3200});
+          else toast(`Calificación enviada: ${VOTES[v].emo} ${VOTES[v].label}`, {tone:VOTES[v].tone, ms:2400});
+        }
+        if(b.dataset.f === 'redo'){
+          const ok = await write(() => DB.doc('tasks/' + t.id).update({done:false, doneBy:null, doneAt:null, ...rvClear(t)}));
+          if(ok){ closeSheet(); toast(`«${t.title}» volvió a pendientes. ¡Tú puedes!`, {tone:'sun', ms:3000}); }
+        }
+      };
+    },
+  });
+}
+
 const Ranking = {
   shell: () => `<section>
     <div class="view-h"><h1>Ranking</h1></div>
@@ -1854,15 +2089,15 @@ const Ranking = {
       ${top === 0 && sc.length ? `<p class="note" style="text-align:center">El podio se llena con la primera tarea completada de la semana.</p>` : ''}
       <div class="ranklist">${sc.map(s => `<div class="rrow t-${safeColor(s.m.color)} ${s.m.id === S.me ? 'me' : ''}">
         <span class="pos">${top ? rankOf(sc, s) : '–'}</span>${avatar(s.m, 'sm')}
-        <span class="who"><b>${esc(s.m.name)}${s.m.id === S.me ? ' (tú)' : ''}</b><small>${plural(s.count, 'tarea hecha', 'tareas hechas')}${top && s.pts < top ? ` · a ${top - s.pts} pts del primero` : ''}</small><span class="bar"><i style="width:${top ? Math.max(4, Math.round(s.pts / top * 100)) : 0}%"></i></span></span>
+        <span class="who"><b>${esc(s.m.name)}${s.m.id === S.me ? ' (tú)' : ''}</b><small>${plural(s.count, 'tarea aprobada', 'tareas aprobadas')}${s.pend ? ` · +${s.pend} en revisión` : ''}${top && s.pts < top ? ` · a ${top - s.pts} pts del primero` : ''}</small><span class="bar"><i style="width:${top ? Math.max(4, Math.round(s.pts / top * 100)) : 0}%"></i></span></span>
         <span class="rp">${s.pts}<small>pts</small></span></div>`).join('')}</div>
       <div class="stats">
-        <div class="stat"><b>${totalN}</b><span>tareas hechas entre todos</span></div>
+        <div class="stat"><b>${totalN}</b><span>tareas aprobadas entre todos</span></div>
         <div class="stat"><b>${totalPts}</b><span>puntos sumados en casa</span></div>
       </div>
       <div class="sec-h"><h2>Cómo se ganan puntos</h2></div>
       <div class="rules">${Object.entries(DIFFS).map(([k, d]) => `<div class="rule d-${k}"><b>+${d.pts}</b><span>${d.label}</span><small>${d.hint}</small></div>`).join('')}</div>
-      <p class="note">La semana va de lunes a domingo. Quien tenga más puntos el domingo a la medianoche gana el premio para la semana siguiente. Si hay empate, ganan los dos.</p>
+      <p class="note">Los puntos de una tarea cuentan cuando al menos 2 de los demás la califican con 👍 Bien hecha. La semana va de lunes a domingo. Quien tenga más puntos el domingo a la medianoche gana el premio para la semana siguiente. Si hay empate, ganan los dos.</p>
       ${hist.length ? `<div class="sec-h"><h2>Salón de la fama</h2></div><div class="hof">${hist.map(h => `<div class="hof-row t-${safeColor(h.win[0].m.color)}">${avatar(h.win[0].m, 'sm')}<span class="grow"><span class="wk">${weekRange(h.w)}</span><br><b>${esc(joinNames(h.win.map(x => x.m.name)))}</b>${h.prize ? `<span class="hp"> · ${esc(h.prize)}</span>` : ''}</span><span class="rp">${h.win[0].pts} pts</span></div>`).join('')}</div>` : ''}
     `;
   },
@@ -1992,9 +2227,8 @@ async function completeTask(id, btn){
   if(!ok){ const it = $('#iToday'); if(it) delete it.dataset.html; }
   render();
   if(!ok) return;
-  const wid = currentWeek().id;
-  const before = S.done.filter(x => x.id !== id && x.doneBy === S.me && weekIdOf(x.doneAt) === wid).reduce((a, x) => a + (Number(x.points) || 0), 0);
-  toast(`+${pts} pts para ${me.name}. Llevas ${before + pts} esta semana.`, {tone: me.color, undo: async () => {
+  const need = Math.min(2, S.members.filter(m => m.id !== S.me).length);
+  toast(need ? `¡Hecha! Los +${pts} pts cuentan cuando ${need === 1 ? 'alguien más la apruebe' : '2 de los demás la aprueben'}.` : `+${pts} pts para ${me.name}.`, {tone: me.color, undo: async () => {
     await write(() => DB.doc('tasks/' + id).update({done:false, doneBy:null, doneAt:null}));
     if(nextRef){ const r = nextRef; await write(() => r.delete()); }
   }});
@@ -2004,7 +2238,8 @@ async function reopenTask(id){
   const t = S.done.find(x => x.id === id);
   if(!t) return;
   const prev = {done:true, doneBy:t.doneBy, doneAt:t.doneAt};
-  const ok = await write(() => DB.doc('tasks/' + id).update({done:false, doneBy:null, doneAt:null}));
+  Object.keys(t).filter(k => k.startsWith('rv_')).forEach(k => prev[k] = t[k]);
+  const ok = await write(() => DB.doc('tasks/' + id).update({done:false, doneBy:null, doneAt:null, ...rvClear(t)}));
   if(ok) toast(`"${t.title}" volvió a pendientes`, {tone:'sun', undo: () => write(() => DB.doc('tasks/' + id).update(prev))});
 }
 
@@ -2065,11 +2300,13 @@ function openSheet({title, body, onMount}){
   requestAnimationFrame(() => requestAnimationFrame(() => { sheet.classList.add('open'); scrim.classList.add('open'); }));
   document.body.classList.add('locked');
   sheetState = {lastFocus: document.activeElement};
+  syncChrome();
   onMount && onMount(sheet);
 }
 function closeSheet(instant){
   if(!sheetState) return;
   const st = sheetState; sheetState = null;
+  syncChrome();
   const sheet = $('#sheet'), scrim = $('#scrim');
   sheet.classList.remove('open'); scrim.classList.remove('open');
   const fin = () => { if(!sheetState){ sheet.hidden = true; scrim.hidden = true; sheet.innerHTML = ''; } };
@@ -2334,7 +2571,7 @@ function openSettings(){
         else if(f === 'rdel'){ draft.rooms.splice(i, 1); paint(); }
         else if(f === 'radd'){ draft.rooms.push({id:'', name:'', emoji:'📍', color:COLORS[(draft.rooms.length + 3) % COLORS.length], w:2, h:1}); paint(); $('#stRn' + (draft.rooms.length - 1))?.focus(); }
         else if(f === 'look'){
-          LOOK[b.dataset.k] = b.dataset.v; lsSet('casa.' + b.dataset.k, b.dataset.v); applyLook();
+          LOOK[b.dataset.k] = b.dataset.v; lsSet('casa.' + b.dataset.k, b.dataset.v); applyLook(); chromeKey = '';
           b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
           render();
         }
@@ -2372,7 +2609,7 @@ function openSettings(){
 /* =========================================================
    Toasts y efectos
    ========================================================= */
-function toast(msg, {undo, tone = 'grape', ms = 4200} = {}){
+function toast(msg, {undo, action, tone = 'grape', ms = 4200} = {}){
   const wrap = $('#toasts');
   while(wrap.children.length >= 3) wrap.firstElementChild.remove();
   const el = document.createElement('div');
@@ -2383,15 +2620,15 @@ function toast(msg, {undo, tone = 'grape', ms = 4200} = {}){
   el.append(span);
   let timer;
   const dismiss = () => { clearTimeout(timer); el.classList.add('out'); setTimeout(() => el.remove(), 240); };
-  if(undo){
+  if(undo || action){
     const b = document.createElement('button');
     b.type = 'button';
-    b.textContent = 'Deshacer';
-    b.onclick = async () => { dismiss(); await undo(); };
+    b.textContent = undo ? 'Deshacer' : action.label;
+    b.onclick = async () => { dismiss(); await (undo ? undo() : action.fn()); };
     el.append(b);
   }
   wrap.append(el);
-  timer = setTimeout(dismiss, undo ? 6500 : ms);
+  timer = setTimeout(dismiss, undo || action ? 6500 : ms);
 }
 
 const fx = $('#fx');
@@ -2445,16 +2682,18 @@ const ACTIONS = {
   tab(b){
     const t = b.dataset.tab;
     if(S.tab === t){ window.scrollTo({top:0, behavior: reduceMotion() ? 'auto' : 'smooth'}); return; }
-    S.tab = t; render(); window.scrollTo({top:0});
+    switchTab(t);
   },
   'open-add'(){ S.tab === 'mercado' ? openGrocerySheet() : openTaskSheet(); },
   complete(b){ completeTask(b.dataset.id, b); },
   'edit-task'(b){ const t = S.pending.find(x => x.id === b.dataset.id); if(t) openTaskSheet(t); },
   reopen(b){ reopenTask(b.dataset.id); },
+  vote(b){ openReviewSheet(b.dataset.id, b.dataset.v); },
+  'review-open'(b){ openReviewSheet(b.dataset.id); },
   tview(b){ S.taskView = b.dataset.v; lsSet('casa.taskView', S.taskView); render(); },
   tstatus(b){ S.taskStatus = b.dataset.v; if(S.taskStatus === 'done' && S.taskWho === 'none') S.taskWho = 'all'; render(); },
   twho(b){ S.taskWho = b.dataset.v; render(); },
-  room(b){ S.tab = 'tareas'; S.taskRoom = b.dataset.room; S.taskView = 'list'; S.taskStatus = 'pending'; S.taskWho = 'all'; lsSet('casa.taskView', 'list'); render(); window.scrollTo({top:0}); },
+  room(b){ S.taskRoom = b.dataset.room; S.taskView = 'list'; S.taskStatus = 'pending'; S.taskWho = 'all'; lsSet('casa.taskView', 'list'); if(S.tab !== 'tareas') switchTab('tareas'); else { render(); window.scrollTo({top:0}); } },
   'room-clear'(){ S.taskRoom = null; render(); },
   'quick-chore'(b){ quickChore(b.dataset.t); },
   prize(){ openPrizeSheet(); },
@@ -2495,7 +2734,7 @@ document.addEventListener('keydown', e => {
   if((e.key === 'Enter' || e.key === ' ') && t instanceof SVGElement && t.dataset.act && ACTIONS[t.dataset.act]){ e.preventDefault(); ACTIONS[t.dataset.act](t, e); }
 });
 document.addEventListener('touchstart', () => {}, {passive:true});
-const onScroll = () => document.body.classList.toggle('scrolled', scrollY > 6);
+const onScroll = () => { const was = document.body.classList.contains('scrolled'), is = scrollY > 6; if(was !== is){ document.body.classList.toggle('scrolled', is); syncChrome(); } };
 window.addEventListener('scroll', onScroll, {passive:true});
 window.addEventListener('resize', () => { if(parts.length) sizeFx(); });
 setInterval(() => { if(S.tab === 'inicio' || S.tab === 'ranking') render(); }, 60000);
