@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Nuestra Casa</title>
+<title>PC 3051</title>
 <meta name="description" content="La app de la casa: tareas por lugar, puntos con premio semanal y lista del mercado.">
 <meta name="theme-color" content="#F3F0FA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#100E1B" media="(prefers-color-scheme: dark)">
+<script>try{var lt=localStorage.getItem('casa.theme');if(lt==='dark'||lt==='light'){document.documentElement.dataset.theme=lt;var lc=lt==='dark'?'#100E1B':'#F3F0FA';document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.content=lc;});}}catch(e){}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Casa">
@@ -638,6 +639,50 @@ html:not(.vt)[data-dir="back"] .view>section{animation:vtInL .38s cubic-bezier(.
 .rvf i{font-style:normal}
 .task.done .task-body{text-align:left}
 
+/* ---------- v5: franja continua, apertura, plano limpio ---------- */
+/* Arriba siempre del mismo tono que la franja de iOS (sin línea), con un desvanecido suave hacia el contenido */
+.topbar,body[data-tab="inicio"]:not(.scrolled) .topbar{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
+.topbar::after{content:"";position:absolute;left:0;right:0;top:100%;height:22px;background:linear-gradient(var(--bg),color-mix(in oklab,var(--bg) 0%,transparent));pointer-events:none}
+.home .hero{background:linear-gradient(180deg,var(--bg) 0,var(--bg) 66px,color-mix(in oklab,var(--tone) 19%,var(--bg)) 210px,color-mix(in oklab,var(--tone) 10%,var(--bg)) 64%,color-mix(in oklab,var(--c-sun) 13%,var(--bg)) 100%)}
+.home .hero::after{top:40px}
+
+/* Pantalla de apertura */
+.splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);transition:opacity .5s ease,visibility .5s}
+.splash::before{content:"";position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,color-mix(in oklab,var(--c-tangerine) 24%,transparent),transparent 66%);animation:spGlow 1.4s ease-out both}
+.splash.out{opacity:0;visibility:hidden}
+.sp-in{position:relative;display:flex;flex-direction:column;align-items:center;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.splash.out .sp-in{transform:scale(1.07)}
+.sp-logo{width:96px;height:96px;transform:rotate(-8deg);filter:drop-shadow(0 14px 20px rgba(229,48,122,.28));animation:spPop .75s cubic-bezier(.2,1.5,.4,1) both}
+.sp-name{margin:18px 0 0;font-family:var(--font-display);font-weight:800;font-size:46px;letter-spacing:-.035em;line-height:1;color:var(--ink);animation:spUp .6s .18s cubic-bezier(.2,.9,.3,1) both}
+.sp-sub{margin:9px 0 0;font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);animation:spUp .6s .3s cubic-bezier(.2,.9,.3,1) both}
+.sp-dots{display:flex;gap:6px;margin-top:28px;opacity:0;animation:spFade .3s 1.4s both}
+.sp-dots b{width:7px;height:7px;border-radius:50%;background:var(--ink-3);animation:spDot 1s infinite ease-in-out}
+.sp-dots b:nth-child(2){animation-delay:.15s}
+.sp-dots b:nth-child(3){animation-delay:.3s}
+@keyframes spPop{from{opacity:0;transform:rotate(-30deg) scale(.4)}}
+@keyframes spUp{from{opacity:0;transform:translateY(12px)}}
+@keyframes spFade{to{opacity:1}}
+@keyframes spDot{0%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+@keyframes spGlow{from{opacity:0;transform:scale(.55)}}
+body.splashing .hero.enter .iso-tile,body.splashing .hero.enter .iso-room{animation-play-state:paused}
+
+/* Plano isométrico limpio */
+:root{--tl-top:20%;--tl-r:46%;--tl-f:34%;--tl-base:var(--surface)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--tl-top:30%;--tl-r:30%;--tl-f:40%;--tl-base:#08070F}}
+:root[data-theme="dark"]{--tl-top:30%;--tl-r:30%;--tl-f:40%;--tl-base:#08070F}
+.iso-clean{filter:drop-shadow(0 12px 16px rgba(29,25,52,.10))}
+.iso .tl-t{fill:color-mix(in oklab,var(--tone) var(--tl-top),var(--surface));stroke:color-mix(in oklab,var(--tone) var(--tl-top),var(--surface));stroke-width:1.2;stroke-linejoin:round;transition:fill .2s}
+.iso .tl-r{fill:color-mix(in oklab,var(--tone) var(--tl-r),var(--tl-base))}
+.iso .tl-f{fill:color-mix(in oklab,var(--tone) var(--tl-f),var(--tl-base))}
+.iso .iso-tile:hover .tl-t,.iso .iso-tile:active .tl-t{fill:color-mix(in oklab,var(--tone) 32%,var(--surface))}
+.iso-clean .emo{font-size:21px}
+.iso-clean .lbl{font-family:var(--font-body);font-weight:800;font-size:10.5px;fill:var(--ink-2);paint-order:stroke;stroke:color-mix(in oklab,var(--tone) var(--tl-top),var(--surface));stroke-width:3px;stroke-linejoin:round}
+.iso-clean .iso-room:focus-visible .lbl{fill:var(--focus)}
+.iso-clean .pin-c{stroke:var(--surface);stroke-width:2}
+.hero.enter .iso-tile{animation:drop .6s cubic-bezier(.2,1.35,.4,1) backwards;animation-delay:calc(var(--i,0) * 70ms + 80ms)}
+.home .iso-wrap{margin:14px -4px 0}
+#iWhole{position:relative;left:auto;bottom:auto;display:flex;justify-content:center;margin-top:6px}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
@@ -648,13 +693,21 @@ html:not(.vt)[data-dir="back"] .view>section{animation:vtInL .38s cubic-bezier(.
 </head>
 <body>
 
+<div class="splash" id="splash" aria-hidden="true">
+  <div class="sp-in">
+    <svg class="sp-logo" viewBox="0 0 32 32"><defs><linearGradient id="lgS" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB51F"/><stop offset=".55" stop-color="#F2602A"/><stop offset="1" stop-color="#E5307A"/></linearGradient></defs><path d="M3.5 14.2 16 3.6l12.5 10.6V26a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 26z" fill="url(#lgS)"/><rect x="12.6" y="17.4" width="6.8" height="11.1" rx="3.4" fill="#fff"/><circle cx="16" cy="11.6" r="2.1" fill="#fff" opacity=".85"/></svg>
+    <p class="sp-name">PC 3051</p>
+    <p class="sp-sub">Nuestra casa</p>
+    <i class="sp-dots"><b></b><b></b><b></b></i>
+  </div>
+</div>
 <div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
 
 <div class="app" id="app" lang="es">
   <header class="topbar" id="topbar">
     <div class="brand">
       <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lgA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB51F"/><stop offset=".55" stop-color="#F2602A"/><stop offset="1" stop-color="#E5307A"/></linearGradient></defs><path d="M3.5 14.2 16 3.6l12.5 10.6V26a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 26z" fill="url(#lgA)"/><rect x="12.6" y="17.4" width="6.8" height="11.1" rx="3.4" fill="#fff"/><circle cx="16" cy="11.6" r="2.1" fill="#fff" opacity=".85"/></svg>
-      <span>Nuestra Casa</span>
+      <span>PC 3051</span>
     </div>
     <button class="iconbtn" data-act="settings" aria-label="Ajustes de la casa" id="btnSettings"></button>
     <button class="mebtn" data-act="profile" id="meBtn" aria-label="Cambiar de perfil"></button>
@@ -1291,7 +1344,7 @@ function subscribe(){
       const d = s.data() || {};
       S.configExists = true;
       S.members = (Array.isArray(d.members) ? d.members : []).filter(m => m && m.id && m.name).map(m => ({id:String(m.id), name:String(m.name).slice(0, 24), color:safeColor(m.color), emoji:m.emoji ? String(m.emoji).slice(0, 8) : ''}));
-      S.rooms = Array.isArray(d.rooms) && d.rooms.length ? d.rooms.filter(r => r && r.id && r.name).map(r => ({id:String(r.id), name:String(r.name).slice(0, 24), emoji:String(r.emoji || '📍').slice(0, 8), color:safeColor(r.color), w:[1,2,3,4].includes(r.w) ? r.w : 2, h:r.h === 2 ? 2 : 1})) : DEFAULT_ROOMS;
+      S.rooms = Array.isArray(d.rooms) && d.rooms.length ? d.rooms.filter(r => r && r.id && r.name).map(r => ({id:String(r.id), name:String(r.name).slice(0, 24), emoji:String(r.emoji || '📍').slice(0, 8), color:safeColor(r.color), w:[1,2,3,4].includes(r.w) ? r.w : 2, h:r.h === 2 ? 2 : 1, ...(Array.isArray(r.plan) && r.plan.length === 4 && r.plan.every(v => isFinite(v)) ? {plan: r.plan.map(Number)} : {})})) : DEFAULT_ROOMS;
     } else {
       S.configExists = false;
       S.members = [];
@@ -1375,7 +1428,7 @@ let installEvt = null;
 const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; render(); });
-window.addEventListener('appinstalled', () => { installEvt = null; lsSet('casa.installHide', '1'); toast('¡Listo! Nuestra Casa quedó instalada.', {tone:'mint'}); render(); });
+window.addEventListener('appinstalled', () => { installEvt = null; lsSet('casa.installHide', '1'); toast('¡Listo! PC 3051 quedó instalada.', {tone:'mint'}); render(); });
 async function doInstall(){
   if(installEvt){
     installEvt.prompt();
@@ -1397,9 +1450,9 @@ function openInstallHelp(){
 const inviteLink = () => location.origin + location.pathname + '#k=' + encodeURIComponent(CODE || '');
 async function shareInvite(){
   const link = inviteLink();
-  const text = `Te invito a Nuestra Casa, la app de la casa para tareas, puntos y mercado. Ábrela en el celular con este link: ${link}\n\nSi te pide código: ${CODE}`;
+  const text = `Te invito a PC 3051, la app de la casa para tareas, puntos y mercado. Ábrela en el celular con este link: ${link}\n\nSi te pide código: ${CODE}`;
   if(navigator.share){
-    try { await navigator.share({title:'Nuestra Casa', text}); return; } catch(e){ if(e && e.name === 'AbortError') return; }
+    try { await navigator.share({title:'PC 3051', text}); return; } catch(e){ if(e && e.name === 'AbortError') return; }
   }
   copyText(text, 'Invitación copiada. Pégala en WhatsApp.');
 }
@@ -1464,7 +1517,6 @@ function syncChrome(){
   const tone = cs.getPropertyValue('--c-' + safeColor(meM()?.color || 'grape')).trim();
   const heroTop = mixHex(tone, bg, .24);
   let top = bg;
-  if(S.tab === 'inicio' && $('#gate').hidden && !document.body.classList.contains('scrolled')) top = heroTop;
   if(sheetState) top = mixHex('#140F28', top, .42);
   const key = heroTop + top;
   if(key === chromeKey) return;
@@ -1473,6 +1525,26 @@ function syncChrome(){
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = top; });
 }
 if(window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { chromeKey = ''; syncChrome(); });
+
+/* Pantalla de apertura: se queda mínimo ~1 s y se va cuando la casa está lista */
+let splashGone = false, splashResolve;
+const splashDone = new Promise(r => { splashResolve = r; });
+document.body.classList.add('splashing');
+function hideSplash(){
+  if(splashGone) return;
+  splashGone = true;
+  const sp = document.getElementById('splash');
+  const go = () => {
+    document.body.classList.remove('splashing');
+    splashResolve();
+    if(!sp) return;
+    sp.classList.add('out');
+    setTimeout(() => sp.remove(), 650);
+  };
+  const wait = reduceMotion() ? 0 : Math.max(0, 1150 - performance.now());
+  setTimeout(go, wait);
+}
+setTimeout(hideSplash, 4500);
 
 let raf = 0;
 function render(){ if(raf) return; raf = requestAnimationFrame(() => { raf = 0; doRender(); }); }
@@ -1483,6 +1555,7 @@ function doRender(){
   renderTabs();
   renderGate();
   syncChrome();
+  if(!splashGone && gateKey !== 'loading' && !S.booting) hideSplash();
 }
 
 function renderTop(){
@@ -1542,7 +1615,7 @@ function renderGate(force){
     html = `<div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-card">${LOGO_BIG}<h1 class="gate-h" style="font-size:30px">Abriendo la casa…</h1><p class="gate-p">Trayendo tareas, puntos y mercado.</p></div>`;
   } else if(key === 'code'){
     html = `<div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-card">${LOGO_BIG}
-      <p class="eyebrow">Nuestra Casa</p>
+      <p class="eyebrow">PC 3051</p>
       <h1 class="gate-h">Entra a tu casa</h1>
       <p class="gate-p">Escribe el código de la casa. Lo encuentras en la invitación que te mandaron por WhatsApp, o en Ajustes de otro celular de la familia.</p>
       <form class="ob-form" id="codeForm" autocomplete="off" novalidate>
@@ -1561,7 +1634,7 @@ function renderGate(force){
     </div>`;
   } else {
     html = `<div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-card">${LOGO_BIG}
-      <p class="eyebrow">Nuestra Casa</p>
+      <p class="eyebrow">PC 3051</p>
       <h1 class="gate-h">${meM() ? 'Cambia de perfil' : '¿Quién eres?'}</h1>
       <p class="gate-p">Toca tu nombre para entrar.</p>
       <div class="who-grid">${S.members.map((m, i) => `<button class="whoc t-${safeColor(m.color)}${m.id === S.me ? ' cur' : ''}" style="--i:${i}" data-act="pick-me" data-id="${esc(m.id)}">${avatar(m, 'xl')}<span>${esc(m.name)}</span>${m.id === S.me ? '<small>Eres tú</small>' : ''}</button>`).join('')}</div>
@@ -1675,91 +1748,48 @@ function roomStats(){
   return {counts, lates};
 }
 
+/* Distribución de los lugares en el plano: [x, y, ancho, fondo] (unidades ~ medio metro).
+   Es genérica mientras llega el plano real de PC 3051. Un lugar puede traer su propio `plan`. */
+const PLAN_DEFAULT = {sala:[0,0,10,10], cocina:[11,0,10,10], comedor:[22,0,10,10], habitaciones:[0,11,10,10], banos:[11,11,10,10], lavadero:[22,11,10,10], patio:[0,22,32,7]};
+function planLayout(rooms){
+  const out = [], free = [];
+  let maxX = 0, maxY = 0;
+  for(const r of rooms){
+    const p = Array.isArray(r.plan) && r.plan.length === 4 && r.plan.every(v => isFinite(v)) ? r.plan.map(Number) : PLAN_DEFAULT[r.id];
+    if(p){ const [x, y, w, d] = p; out.push({r, x, y, w, d}); maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + d); }
+    else free.push(r);
+  }
+  const W = Math.max(maxX, 21), cols = W >= 30 ? 3 : 2, cw = (W - (cols - 1)) / cols;
+  free.forEach((r, i) => out.push({r, x: (i % cols) * (cw + 1), y: maxY + (maxY ? 1 : 0) + Math.floor(i / cols) * 11, w: cw, d: 10}));
+  return out;
+}
+
+/* Plano isométrico limpio: pisos flotando con su color, un emoji y el nombre */
 function isoHouseSVG(){
   const rooms = S.rooms.length ? S.rooms : DEFAULT_ROOMS;
-  const n = rooms.length;
-  const cols = n <= 2 ? n : n <= 4 ? 2 : n <= 9 ? 3 : 4;
-  const rows = Math.ceil(n / cols);
-  const C = 11, W = cols * C, D = rows * C;
-  const H = 7, T = 1.1, F = 1, MB = 3, MF = 5.5, GT = 1.6;
+  const cells = planLayout(rooms).sort((a, b) => (a.x + a.y + (a.w + a.d) / 2) - (b.x + b.y + (b.w + b.d) / 2));
   const {counts, lates} = roomStats();
-  const back = [], floors = [], dividers = [], top = [], labels = [];
-  let minY = isoP(-T, -T, F + H)[1];
-
-  // terreno, base y paredes del fondo
-  back.push(isoPoly('g-side2', [W+MF,-MB,0], [W+MF,D+MF,0], [W+MF,D+MF,-GT], [W+MF,-MB,-GT]));
-  back.push(isoPoly('g-side', [-MB,D+MF,0], [W+MF,D+MF,0], [W+MF,D+MF,-GT], [-MB,D+MF,-GT]));
-  back.push(isoPoly('g-top', [-MB,-MB,0], [W+MF,-MB,0], [W+MF,D+MF,0], [-MB,D+MF,0]));
-  back.push(isoPoly('s-side2', [W,0,0], [W,D,0], [W,D,F], [W,0,F]));
-  back.push(isoPoly('s-side', [0,D,0], [W,D,0], [W,D,F], [0,D,F]));
-  back.push(isoPoly('s-top', [0,0,F], [W,0,F], [W,D,F], [0,D,F]));
-  back.push(isoPoly('w-in-b', [0,0,F], [0,D,F], [0,D,F+H], [0,0,F+H]));
-  back.push(isoPoly('w-in-a', [0,0,F], [W,0,F], [W,0,F+H], [0,0,F+H]));
-  back.push(isoPoly('w-top', [-T,-T,F+H], [W,-T,F+H], [W,0,F+H], [0,0,F+H], [0,D,F+H], [-T,D,F+H]));
-  back.push(isoPoly('w-end', [W,-T,0], [W,0,0], [W,0,F+H], [W,-T,F+H]));
-  back.push(isoPoly('w-end', [-T,D,0], [0,D,0], [0,D,F+H], [-T,D,F+H]));
-  const win = (a, b, z0, z1, alongX) => {
-    const P = (u, z) => alongX ? [u, 0, z] : [0, u, z];
-    const m = (a + b) / 2, zm = (z0 + z1) / 2;
-    const [x1, y1] = isoP(...P(m, z0)), [x2, y2] = isoP(...P(m, z1)), [x3, y3] = isoP(...P(a, zm)), [x4, y4] = isoP(...P(b, zm));
-    return isoPoly('win', P(a, z0), P(b, z0), P(b, z1), P(a, z1))
-      + `<path class="win-x" d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}M${x3.toFixed(1)} ${y3.toFixed(1)}L${x4.toFixed(1)} ${y4.toFixed(1)}"/>`;
-  };
-  for(let i = 0; i < cols; i++){ const c = (i + .5) * C; back.push(win(c - 2.3, c + 2.3, F + 2.4, F + 5.6, true)); }
-  for(let j = 0; j < rows; j++){ const c = (j + .5) * C; back.push(win(c - 2.3, c + 2.3, F + 2.4, F + 5.6, false)); }
-
-  // lugares
-  const cells = rooms.map((r, i) => {
-    const row = Math.floor(i / cols), inRow = row === rows - 1 ? n - row * cols : cols, w = W / inRow;
-    return {r, i, x: (i - row * cols) * w, y: row * C, w, d: C};
-  });
-  const seg = (a, b) => { const m = (a + b) / 2, g = Math.min(1.6, (b - a) / 4); return [[a, m - g], [m + g, b]]; };
-  for(const c of cells){
-    const {r, x, y, w, d} = c, g = .3, k = 2.4;
-    const tone = safeColor(r.color);
-    floors.push(`<g class="iso-fl t-${tone}" style="--i:${c.i}" data-act="room" data-room="${esc(r.id)}" aria-hidden="true">${isoPoly('fl', [x+g,y+g,F], [x+w-g,y+g,F], [x+w-g,y+d-g,F], [x+g,y+d-g,F])}${isoPoly('rug', [x+k,y+k,F], [x+w-k,y+k,F], [x+w-k,y+d-k,F], [x+k,y+d-k,F])}</g>`);
-    const h = 1.5, t = .28;
-    if(x + w < W - .01) for(const [a, b] of seg(y, y + d)){
-      const X = x + w;
-      dividers.push({k: X + b, s: isoPoly('d-side', [X+t,a,F], [X+t,b,F], [X+t,b,F+h], [X+t,a,F+h]) + isoPoly('d-end', [X-t,b,F], [X+t,b,F], [X+t,b,F+h], [X-t,b,F+h]) + isoPoly('d-top', [X-t,a,F+h], [X+t,a,F+h], [X+t,b,F+h], [X-t,b,F+h])});
-    }
-    if(y + d < D - .01) for(const [a, b] of seg(x, x + w)){
-      const Y = y + d;
-      dividers.push({k: Y + b, s: isoPoly('d-end', [a,Y+t,F], [b,Y+t,F], [b,Y+t,F+h], [a,Y+t,F+h]) + isoPoly('d-side', [b,Y-t,F], [b,Y+t,F], [b,Y+t,F+h], [b,Y-t,F+h]) + isoPoly('d-top', [a,Y-t,F+h], [b,Y-t,F+h], [b,Y+t,F+h], [a,Y+t,F+h])});
-    }
-    const [px, py] = isoP(x + w / 2, y + d / 2, F);
-    const cnt = counts[r.id] || 0, late = !!lates[r.id];
-    const maxCh = w >= 2 * C ? 24 : 13;
+  const G = .5, T = 1.1, f = v => v.toFixed(1);
+  const tiles = [], labels = [];
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  const grow = (px, py) => { x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); };
+  cells.forEach((c, i) => {
+    const {r} = c, x = c.x + G, y = c.y + G, w = c.w - 2 * G, d = c.d - 2 * G;
+    const tone = safeColor(r.color), cnt = counts[r.id] || 0, late = !!lates[r.id];
+    [[x, y, 0], [x + w, y, 0], [x + w, y + d, -T], [x, y + d, -T]].forEach(p => grow(...isoP(...p)));
+    tiles.push(`<g class="iso-tile t-${tone}" style="--i:${i}" data-act="room" data-room="${esc(r.id)}" aria-hidden="true">${isoPoly('tl-r', [x+w,y,0], [x+w,y+d,0], [x+w,y+d,-T], [x+w,y,-T])}${isoPoly('tl-f', [x,y+d,0], [x+w,y+d,0], [x+w,y+d,-T], [x,y+d,-T])}${isoPoly('tl-t', [x,y,0], [x+w,y,0], [x+w,y+d,0], [x,y+d,0])}</g>`);
+    const [px, py] = isoP(x + w / 2, y + d / 2, 0);
+    const maxCh = c.w >= 18 ? 24 : 14;
     const name = r.name.length > maxCh ? r.name.slice(0, maxCh - 1) + '…' : r.name;
-    const lw = Math.round(name.length * 6.2 + 38), lx = px - lw / 2, ly = py + 8;
-    const f = v => v.toFixed(1);
-    const badge = cnt
-      ? `<g class="bdg ${late ? 'late' : ''}"><circle class="pin-c" cx="${f(lx + lw - 11)}" cy="${f(ly + 9)}" r="8"/><text class="pin-t" x="${f(lx + lw - 11)}" y="${f(ly + 9.5)}" text-anchor="middle" dominant-baseline="central">${cnt > 9 ? '9+' : cnt}</text></g>`
-      : `<circle class="ok-c" cx="${f(lx + lw - 11)}" cy="${f(ly + 9)}" r="8"/><path class="ok-p" transform="translate(${f(lx + lw - 11)} ${f(ly + 9)})" d="M-3.2 .2 -.9 2.5 3.4-2.2"/>`;
-    minY = Math.min(minY, py - 34);
-    const depth = x + y + w / 2 + d / 2;
-    top.push({k: depth, s: `<g class="iso-emo t-${tone}${cnt ? ' busy' : ''}" style="--i:${c.i};--d:${(c.i * .41).toFixed(2)}s" data-act="room" data-room="${esc(r.id)}" aria-hidden="true">
-      <ellipse class="e-sh" cx="${f(px)}" cy="${f(py)}" rx="11" ry="5"/>
-      <text class="emo" x="${f(px)}" y="${f(py - 9)}" text-anchor="middle" dominant-baseline="central">${esc(r.emoji)}</text></g>`});
-    labels.push({k: depth, s: `<g class="iso-room t-${tone}" style="--i:${c.i}" role="button" tabindex="0" data-act="room" data-room="${esc(r.id)}" aria-label="${esc(r.name)}: ${cnt ? plural(cnt, 'tarea pendiente', 'tareas pendientes') + (late ? ', hay vencidas' : '') : 'al día'}">
-      <rect class="lbl-bg" x="${f(lx)}" y="${f(ly)}" width="${lw}" height="18" rx="9"/>
-      <text class="lbl" x="${f(lx + 10)}" y="${f(ly + 9.5)}" dominant-baseline="central">${esc(name)}</text>
-      ${badge}</g>`});
-  }
-
-  // jardín
-  const tree = (x, y, s = 1) => { const [bx, by] = isoP(x, y, 0); const f = v => v.toFixed(1);
-    return `<g class="tree"><ellipse class="e-sh" cx="${f(bx + 3)}" cy="${f(by)}" rx="${f(9 * s)}" ry="${f(3.6 * s)}"/><rect class="t-trunk" x="${f(bx - 1.6 * s)}" y="${f(by - 14 * s)}" width="${f(3.2 * s)}" height="${f(14 * s)}" rx="1.4"/><circle class="t-leaf" cx="${f(bx)}" cy="${f(by - 21 * s)}" r="${f(9.5 * s)}"/><circle class="t-leaf2" cx="${f(bx - 5.5 * s)}" cy="${f(by - 15 * s)}" r="${f(6.5 * s)}"/><circle class="t-leaf2" cx="${f(bx + 5.5 * s)}" cy="${f(by - 14 * s)}" r="${f(6 * s)}"/></g>`; };
-  const bush = (x, y) => { const [bx, by] = isoP(x, y, 0); return `<g class="tree"><circle class="t-leaf2" cx="${(bx - 4).toFixed(1)}" cy="${(by - 3).toFixed(1)}" r="5"/><circle class="t-leaf" cx="${(bx + 2).toFixed(1)}" cy="${(by - 4.5).toFixed(1)}" r="6"/></g>`; };
-  const garden = [{k: W + 3.6 + 2.5, s: tree(W + 3.8, 2.5)}, {k: W + 3.8 + D * .62, s: tree(W + 4, D * .62, .8)}, {k: 3 + D + 4, s: tree(2.8, D + 4, .85)}, {k: W * .55 + D + 4.5, s: bush(W * .55, D + 4.6)}];
-
-  const bx0 = isoP(-MB, D + MF)[0] - 6, bx1 = isoP(W + MF, -MB)[0] + 6;
-  const y0 = minY - 6, y1 = isoP(W + MF, D + MF, -GT)[1] + 6;
-  const vw = bx1 - bx0, vh = y1 - y0;
-  const sky = `<circle class="sun" cx="${(bx1 - 34).toFixed(1)}" cy="${(y0 + 28).toFixed(1)}" r="15"/><rect class="cloud" x="${(bx0 + 22).toFixed(1)}" y="${(y0 + 18).toFixed(1)}" width="46" height="13" rx="6.5"/><rect class="cloud" x="${(bx0 + 40).toFixed(1)}" y="${(y0 + 10).toFixed(1)}" width="24" height="13" rx="6.5"/>`;
-  return `<svg class="iso" viewBox="${bx0.toFixed(1)} ${y0.toFixed(1)} ${vw.toFixed(1)} ${vh.toFixed(1)}" role="group" aria-label="Plano de la casa. Toca un lugar para ver sus tareas.">
-    ${sky}${back.join('')}<g class="iso-floors">${floors.join('')}</g>${dividers.sort((a, b) => a.k - b.k).map(d => d.s).join('')}
-    ${[...garden, ...top].sort((a, b) => a.k - b.k).map(d => d.s).join('')}${labels.sort((a, b) => a.k - b.k).map(d => d.s).join('')}</svg>`;
+    grow(px, py - 32); grow(px - name.length * 3.4, py + 20); grow(px + name.length * 3.4, py + 20);
+    labels.push(`<g class="iso-room t-${tone}${cnt ? ' busy' : ''}" style="--i:${i};--d:${(i * .41).toFixed(2)}s" role="button" tabindex="0" data-act="room" data-room="${esc(r.id)}" aria-label="${esc(r.name)}: ${cnt ? plural(cnt, 'tarea pendiente', 'tareas pendientes') + (late ? ', hay vencidas' : '') : 'al día'}">
+      <text class="emo" x="${f(px)}" y="${f(py - 7)}" text-anchor="middle" dominant-baseline="central">${esc(r.emoji)}</text>
+      <text class="lbl" x="${f(px)}" y="${f(py + 14)}" text-anchor="middle" dominant-baseline="central">${esc(name)}</text>
+      ${cnt ? `<g class="bdg${late ? ' late' : ''}"><circle class="pin-c" cx="${f(px + 15)}" cy="${f(py - 20)}" r="8.5"/><text class="pin-t" x="${f(px + 15)}" y="${f(py - 19.5)}" text-anchor="middle" dominant-baseline="central">${cnt > 9 ? '9+' : cnt}</text></g>` : ''}
+    </g>`);
+  });
+  const pad = 8;
+  return `<svg class="iso iso-clean" viewBox="${f(x0 - pad)} ${f(y0 - pad)} ${f(x1 - x0 + 2 * pad)} ${f(y1 - y0 + 2 * pad)}" role="group" aria-label="Plano de la casa. Toca un lugar para ver sus tareas.">${tiles.join('')}${labels.join('')}</svg>`;
 }
 
 function wholeChip(always){
@@ -1805,7 +1835,7 @@ const Inicio = {
     <div class="ranklist" id="iBoard"></div>
     </div>
   </section>`,
-  mount(){ Inicio._entered = true; setTimeout(() => $('#iHero')?.classList.remove('enter'), 1400); },
+  mount(){ Inicio._entered = true; splashDone.then(() => setTimeout(() => $('#iHero')?.classList.remove('enter'), 1500)); },
   update(){
     const me = meM();
     const wk = currentWeek();
