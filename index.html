@@ -692,6 +692,12 @@ body.splashing .hero.enter .iso-tile,body.splashing .hero.enter .iso-room{animat
 .reset-note{display:flex;align-items:center;gap:8px;margin:4px 2px 8px;font-size:13px;font-weight:800;color:var(--ink-3)}
 .reset-note svg{width:16px;height:16px}
 
+/* ---------- v7: plano real de PC 3051 ---------- */
+.iso-top .lbl{stroke-width:1.4px}
+.iso-top .pin-c{stroke-width:1.1}
+.iso-top .pin-t{font-weight:800}
+.home .iso-top{margin-top:4px}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
@@ -806,6 +812,8 @@ const CHORES = [
   {t:'Sacudir el polvo', room:'sala', d:'facil'},
   {t:'Poner y recoger la mesa', room:'comedor', d:'facil'},
 ];
+
+const choreRoom = c => c.room === WHOLE.id || S.rooms.some(r => r.id === c.room) ? c.room : WHOLE.id;
 
 const PRIZES = [
   'Escoge la comida del domingo',
@@ -1359,10 +1367,11 @@ function subscribe(){
       const d = s.data() || {};
       S.configExists = true;
       S.pointsSince = typeof d.pointsSince === 'string' ? d.pointsSince : '';
+      S.planView = d.planView === 'iso' ? 'iso' : 'top';
       const wd = Number(d.weekDay);
       WEEK_DAY = Number.isInteger(wd) && wd >= 0 && wd <= 6 ? wd : 1;
       S.members = (Array.isArray(d.members) ? d.members : []).filter(m => m && m.id && m.name).map(m => ({id:String(m.id), name:String(m.name).slice(0, 24), color:safeColor(m.color), emoji:m.emoji ? String(m.emoji).slice(0, 8) : ''}));
-      S.rooms = Array.isArray(d.rooms) && d.rooms.length ? d.rooms.filter(r => r && r.id && r.name).map(r => ({id:String(r.id), name:String(r.name).slice(0, 24), emoji:String(r.emoji || '📍').slice(0, 8), color:safeColor(r.color), w:[1,2,3,4].includes(r.w) ? r.w : 2, h:r.h === 2 ? 2 : 1, ...(Array.isArray(r.plan) && r.plan.length === 4 && r.plan.every(v => isFinite(v)) ? {plan: r.plan.map(Number)} : {})})) : DEFAULT_ROOMS;
+      S.rooms = Array.isArray(d.rooms) && d.rooms.length ? d.rooms.filter(r => r && r.id && r.name).map(r => ({id:String(r.id), name:String(r.name).slice(0, 24), emoji:String(r.emoji || '📍').slice(0, 8), color:safeColor(r.color), w:[1,2,3,4].includes(r.w) ? r.w : 2, h:r.h === 2 ? 2 : 1, ...roomGeo(r)})) : DEFAULT_ROOMS;
     } else {
       S.configExists = false;
       S.members = [];
@@ -1766,48 +1775,116 @@ function roomStats(){
   return {counts, lates};
 }
 
-/* Distribución de los lugares en el plano: [x, y, ancho, fondo] (unidades ~ medio metro).
-   Es genérica mientras llega el plano real de PC 3051. Un lugar puede traer su propio `plan`. */
+/* Distribución de los lugares en el plano (unidades ~ 40 cm).
+   Cada lugar puede traer `plan: [x, y, ancho, fondo]` o `shape: [[x, y], …]` (contorno recto, p. ej. una L),
+   `at: [x, y]` para el nombre y `short` como nombre corto en el plano. Si no trae nada usa PLAN_DEFAULT. */
 const PLAN_DEFAULT = {sala:[0,0,10,10], cocina:[11,0,10,10], comedor:[22,0,10,10], habitaciones:[0,11,10,10], banos:[11,11,10,10], lavadero:[22,11,10,10], patio:[0,22,32,7]};
+const isNum = v => v !== null && v !== '' && v !== true && v !== false && isFinite(v);
+const validPt = p => Array.isArray(p) && p.length === 2 && p.every(isNum);
+const validShape = sh => Array.isArray(sh) && sh.length >= 4 && sh.length <= 24 && sh.every(validPt);
+function roomGeo(r){
+  const g = {};
+  if(Array.isArray(r.plan) && r.plan.length === 4 && r.plan.every(isNum)) g.plan = r.plan.map(Number);
+  if(validShape(r.shape)) g.shape = r.shape.map(p => [Number(p[0]), Number(p[1])]);
+  if(validPt(r.at)) g.at = [Number(r.at[0]), Number(r.at[1])];
+  if(typeof r.short === 'string' && r.short.trim()) g.short = r.short.trim().slice(0, 16);
+  return g;
+}
+const rectPts = (x, y, w, d) => [[x, y], [x + w, y], [x + w, y + d], [x, y + d]];
 function planLayout(rooms){
   const out = [], free = [];
   let maxX = 0, maxY = 0;
   for(const r of rooms){
-    const p = Array.isArray(r.plan) && r.plan.length === 4 && r.plan.every(v => isFinite(v)) ? r.plan.map(Number) : PLAN_DEFAULT[r.id];
-    if(p){ const [x, y, w, d] = p; out.push({r, x, y, w, d}); maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + d); }
+    let pts = null;
+    if(validShape(r.shape)) pts = r.shape;
+    else { const p = Array.isArray(r.plan) && r.plan.length === 4 && r.plan.every(isNum) ? r.plan.map(Number) : PLAN_DEFAULT[r.id]; if(p) pts = rectPts(...p); }
+    if(pts){ out.push({r, pts}); pts.forEach(([x, y]) => { maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); }); }
     else free.push(r);
   }
   const W = Math.max(maxX, 21), cols = W >= 30 ? 3 : 2, cw = (W - (cols - 1)) / cols;
-  free.forEach((r, i) => out.push({r, x: (i % cols) * (cw + 1), y: maxY + (maxY ? 1 : 0) + Math.floor(i / cols) * 11, w: cw, d: 10}));
-  return out;
+  free.forEach((r, i) => out.push({r, pts: rectPts((i % cols) * (cw + 1), maxY + (maxY ? 1 : 0) + Math.floor(i / cols) * 11, cw, 10)}));
+  return out.map(c => {
+    const xs = c.pts.map(p => p[0]), ys = c.pts.map(p => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const at = validPt(c.r.at) ? c.r.at : [(x0 + x1) / 2, (y0 + y1) / 2];
+    return {...c, x0, y0, w: x1 - x0, d: y1 - y0, cx: +at[0], cy: +at[1]};
+  });
+}
+/* Encoge un contorno recto hacia adentro (deja la separación entre pisos) */
+const areaOf = pts => pts.reduce((a, p, i) => { const q = pts[(i + 1) % pts.length]; return a + p[0] * q[1] - q[0] * p[1]; }, 0);
+function insetOrtho(pts, g){
+  const n = pts.length, s = areaOf(pts) > 0 ? 1 : -1;
+  const inward = (a, b) => { const dx = Math.sign(b[0] - a[0]), dy = Math.sign(b[1] - a[1]); return s > 0 ? [-dy, dx] : [dy, -dx]; };
+  return pts.map((p, i) => { const a = inward(pts[(i - 1 + n) % n], p), b = inward(p, pts[(i + 1) % n]); return [p[0] + (a[0] + b[0]) * g, p[1] + (a[1] + b[1]) * g]; });
 }
 
 /* Plano isométrico limpio: pisos flotando con su color, un emoji y el nombre */
+/* Vista del plano: 'top' (desde arriba, como el dibujo de PC 3051) por defecto; 'iso' (3D) si la casa lo pide en sus datos */
+const planView = () => S.planView === 'iso' ? 'iso' : 'top';
 function isoHouseSVG(){
+  const view = planView(), TOP = view === 'top';
+  const TU = 6, TY = .86;
+  const P = TOP ? (x, y, z = 0) => [x * TU, y * TU * TY - z * TU * .9] : isoP;
+  const poly = (cls, ...ps) => `<polygon class="${cls}" points="${ps.map(p => P(...p).map(v => v.toFixed(1)).join(',')).join(' ')}"/>`;
   const rooms = S.rooms.length ? S.rooms : DEFAULT_ROOMS;
-  const cells = planLayout(rooms).sort((a, b) => (a.x + a.y + (a.w + a.d) / 2) - (b.x + b.y + (b.w + b.d) / 2));
+  const order = TOP ? (a, b) => a.y0 - b.y0 || a.x0 - b.x0 : (a, b) => (a.x0 + a.y0) - (b.x0 + b.y0) || (a.cx + a.cy) - (b.cx + b.cy);
+  const cells = planLayout(rooms).sort(order);
   const {counts, lates} = roomStats();
-  const G = .5, T = 1.1, f = v => v.toFixed(1);
+  const G = TOP ? .3 : .5, T = TOP ? .75 : 1.1, f = v => v.toFixed(1);
   const tiles = [], labels = [];
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
   const grow = (px, py) => { x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); };
   cells.forEach((c, i) => {
-    const {r} = c, x = c.x + G, y = c.y + G, w = c.w - 2 * G, d = c.d - 2 * G;
+    const {r} = c, pts = insetOrtho(c.pts, G), n = pts.length, sgn = areaOf(pts) > 0 ? 1 : -1;
     const tone = safeColor(r.color), cnt = counts[r.id] || 0, late = !!lates[r.id];
-    [[x, y, 0], [x + w, y, 0], [x + w, y + d, -T], [x, y + d, -T]].forEach(p => grow(...isoP(...p)));
-    tiles.push(`<g class="iso-tile t-${tone}" style="--i:${i}" data-act="room" data-room="${esc(r.id)}" aria-hidden="true">${isoPoly('tl-r', [x+w,y,0], [x+w,y+d,0], [x+w,y+d,-T], [x+w,y,-T])}${isoPoly('tl-f', [x,y+d,0], [x+w,y+d,0], [x+w,y+d,-T], [x,y+d,-T])}${isoPoly('tl-t', [x,y,0], [x+w,y,0], [x+w,y+d,0], [x,y+d,0])}</g>`);
-    const [px, py] = isoP(x + w / 2, y + d / 2, 0);
-    const maxCh = c.w >= 18 ? 24 : 14;
-    const name = r.name.length > maxCh ? r.name.slice(0, maxCh - 1) + '…' : r.name;
-    grow(px, py - 32); grow(px - name.length * 3.4, py + 20); grow(px + name.length * 3.4, py + 20);
+    let sides = '';
+    pts.forEach((a, k) => {
+      const b = pts[(k + 1) % n], dx = Math.sign(b[0] - a[0]), dy = Math.sign(b[1] - a[1]);
+      const out = sgn > 0 ? [dy, -dx] : [-dy, dx];
+      if(out[1] === 1 || (!TOP && out[0] === 1)) sides += poly(out[0] === 1 ? 'tl-r' : 'tl-f', [a[0], a[1], 0], [b[0], b[1], 0], [b[0], b[1], -T], [a[0], a[1], -T]);
+      grow(...P(a[0], a[1], 0)); grow(...P(a[0], a[1], -T));
+    });
+    tiles.push(`<g class="iso-tile t-${tone}" style="--i:${i}" data-act="room" data-room="${esc(r.id)}" aria-hidden="true">${sides}${poly('tl-t', ...pts.map(p => [p[0], p[1], 0]))}</g>`);
+    const [px, py] = P(c.cx, c.cy, 0);
+    const full = r.short || r.name;
+    let emoX = px, emoY, lblX = px, lblY, anchor = 'middle', es, ls, name = full, showEmo = true, showLbl = true, bx, by, br;
+    if(TOP){
+      // desde arriba: el nombre y el emoji se acomodan al tamaño real del lugar
+      const sw = (c.w - 2 * G) * TU - 2, sh = (c.d - 2 * G) * TU * TY;
+      ls = 6.2; const cw = ls * .58, fit = n => Math.max(3, Math.floor(n / cw));
+      if(sh >= 20){
+        es = Math.min(10.5, sh * .42);
+        if(name.length * cw > sw * 1.4) name = name.slice(0, fit(sw * 1.4) - 1) + '…';
+        const tot = es + 2 + ls;
+        emoY = py - tot / 2 + es / 2; lblY = emoY + es / 2 + 2 + ls / 2;
+      } else {
+        es = Math.min(9.5, sh * .8); emoY = py; lblY = py + .3;
+        const tw = name.length * cw;
+        if(es + 3 + tw <= sw){ emoX = px - (es + 3 + tw) / 2 + es / 2; lblX = emoX + es / 2 + 3; anchor = 'start'; }
+        else { showEmo = false; if(tw > sw) name = name.slice(0, fit(sw) - 1) + '…'; }
+      }
+      const [qx, qy] = P(c.x0 + c.w - G - .25, c.y0 + G + .3, 0);
+      bx = qx; by = qy; br = 4.1;
+      grow(bx + br, by - br);
+      grow(px - name.length * 2, py); grow(px + name.length * 2, py);
+    } else {
+      const k = Math.min(1, Math.max(.62, Math.min(c.w, c.d) / 6.5));
+      es = 21 * k; ls = 10.5 * Math.max(.86, k);
+      const maxCh = c.w >= 16 ? 24 : 14;
+      if(name.length > maxCh) name = name.slice(0, maxCh - 1) + '…';
+      showLbl = Math.min(c.w, c.d) >= 4;
+      const off = 13 * Math.max(.8, k); emoY = py - off * .55; lblY = py + off;
+      bx = px + 13 * k + 1; by = py - 19 * k; br = 8.5;
+      grow(px, py - 30); grow(px - name.length * 3.4, py + 18); grow(px + name.length * 3.4, py + 18);
+    }
     labels.push(`<g class="iso-room t-${tone}${cnt ? ' busy' : ''}" style="--i:${i};--d:${(i * .41).toFixed(2)}s" role="button" tabindex="0" data-act="room" data-room="${esc(r.id)}" aria-label="${esc(r.name)}: ${cnt ? plural(cnt, 'tarea pendiente', 'tareas pendientes') + (late ? ', hay vencidas' : '') : 'al día'}">
-      <text class="emo" x="${f(px)}" y="${f(py - 7)}" text-anchor="middle" dominant-baseline="central">${esc(r.emoji)}</text>
-      <text class="lbl" x="${f(px)}" y="${f(py + 14)}" text-anchor="middle" dominant-baseline="central">${esc(name)}</text>
-      ${cnt ? `<g class="bdg${late ? ' late' : ''}"><circle class="pin-c" cx="${f(px + 15)}" cy="${f(py - 20)}" r="8.5"/><text class="pin-t" x="${f(px + 15)}" y="${f(py - 19.5)}" text-anchor="middle" dominant-baseline="central">${cnt > 9 ? '9+' : cnt}</text></g>` : ''}
+      ${showEmo ? `<text class="emo" x="${f(emoX)}" y="${f(emoY)}" text-anchor="middle" dominant-baseline="central" style="font-size:${f(es)}px">${esc(r.emoji)}</text>` : ''}
+      ${showLbl ? `<text class="lbl" x="${f(lblX)}" y="${f(lblY)}" text-anchor="${anchor}" dominant-baseline="central" style="font-size:${f(ls)}px">${esc(name)}</text>` : ''}
+      ${cnt ? `<g class="bdg${late ? ' late' : ''}"><circle class="pin-c" cx="${f(bx)}" cy="${f(by)}" r="${br}"/><text class="pin-t" x="${f(bx)}" y="${f(by + .3)}" text-anchor="middle" dominant-baseline="central"${TOP ? ' style="font-size:5.4px"' : ''}>${cnt > 9 ? '9+' : cnt}</text></g>` : ''}
     </g>`);
   });
-  const pad = 8;
-  return `<svg class="iso iso-clean" viewBox="${f(x0 - pad)} ${f(y0 - pad)} ${f(x1 - x0 + 2 * pad)} ${f(y1 - y0 + 2 * pad)}" role="group" aria-label="Plano de la casa. Toca un lugar para ver sus tareas.">${tiles.join('')}${labels.join('')}</svg>`;
+  const pad = TOP ? 4 : 8;
+  return `<svg class="iso iso-clean${TOP ? ' iso-top' : ''}" viewBox="${f(x0 - pad)} ${f(y0 - pad)} ${f(x1 - x0 + 2 * pad)} ${f(y1 - y0 + 2 * pad)}" role="group" aria-label="Plano de la casa. Toca un lugar para ver sus tareas.">${tiles.join('')}${labels.join('')}</svg>`;
 }
 
 function wholeChip(always){
@@ -2003,7 +2080,7 @@ const Tareas = {
       const any = S.pending.length > 0;
       const chores = CHORES.filter(c => !S.pending.some(t => norm(t.title) === norm(c.t))).slice(0, 6);
       body.innerHTML = `<div class="empty t-mint" style="margin-top:18px"><span class="art">✨</span><h3>${any ? 'Nada con este filtro' : 'La casa está al día'}</h3><p>${any ? 'Prueba con otro filtro o crea una tarea nueva.' : 'Agrega las tareas de la casa. Toca una sugerencia para crearla rápido:'}</p>
-        ${any ? '' : `<div class="wrapopts">${chores.map(c => `<button class="pill" data-act="quick-chore" data-t="${esc(c.t)}">${esc(roomById(c.room).emoji)} ${esc(c.t)}</button>`).join('')}</div>`}</div>`;
+        ${any ? '' : `<div class="wrapopts">${chores.map(c => `<button class="pill" data-act="quick-chore" data-t="${esc(c.t)}">${esc(roomById(choreRoom(c)).emoji)} ${esc(c.t)}</button>`).join('')}</div>`}</div>`;
       return;
     }
     const groups = [
@@ -2331,7 +2408,7 @@ async function quickChore(title){
   const c = CHORES.find(x => x.t === title);
   if(!c || needMe()) return;
   const ref = DB.collection('tasks').doc();
-  const ok = await write(() => ref.set({title:c.t, room:c.room, diff:c.d, points:DIFFS[c.d].pts, assignee:null, due:ymd(today()), repeat:'none', done:false, doneBy:null, doneAt:null, createdBy:S.me, createdAt:new Date().toISOString()}));
+  const ok = await write(() => ref.set({title:c.t, room:choreRoom(c), diff:c.d, points:DIFFS[c.d].pts, assignee:null, due:ymd(today()), repeat:'none', done:false, doneBy:null, doneAt:null, createdBy:S.me, createdAt:new Date().toISOString()}));
   if(ok) toast(`Tarea creada: ${c.t}`, {tone:'mint', ms:2200});
 }
 
@@ -2391,7 +2468,7 @@ function openTaskSheet(existing){
     body: `<form id="tf" novalidate>
       <label class="field" style="margin-top:6px"><span class="label">¿Qué hay que hacer?</span><input class="input" id="tfTitle" maxlength="70" placeholder="Ej: Lavar los platos" value="${esc(d.title)}" autocomplete="off"></label>
       <p class="form-err" id="tfErr" hidden>Escribe qué hay que hacer.</p>
-      ${isEdit ? '' : `<div class="scroller sugg-row" aria-label="Sugerencias">${CHORES.map((c, i) => `<button type="button" class="pill" data-f="chore" data-v="${i}">${esc(roomById(c.room).emoji)} ${esc(c.t)}</button>`).join('')}</div>`}
+      ${isEdit ? '' : `<div class="scroller sugg-row" aria-label="Sugerencias">${CHORES.map((c, i) => `<button type="button" class="pill" data-f="chore" data-v="${i}">${esc(roomById(choreRoom(c)).emoji)} ${esc(c.t)}</button>`).join('')}</div>`}
       <div id="tfOpts"></div>
       <button class="btn-primary" type="submit" id="tfSubmit"></button>
       ${isEdit ? `<button type="button" class="btn-danger" data-f="delete" id="tfDel">${ICON.trash}Eliminar tarea</button>` : ''}
@@ -2412,7 +2489,7 @@ function openTaskSheet(existing){
         else if(f === 'who') d.assignee = v || null;
         else if(f === 'due') d.due = dueFromKey(v);
         else if(f === 'repeat') d.repeat = v;
-        else if(f === 'chore'){ const c = CHORES[+v]; $('#tfTitle').value = c.t; d.room = c.room; d.diff = c.d; $('#tfErr').hidden = true; $('#tfTitle').classList.remove('bad'); }
+        else if(f === 'chore'){ const c = CHORES[+v]; $('#tfTitle').value = c.t; d.room = choreRoom(c); d.diff = c.d; $('#tfErr').hidden = true; $('#tfTitle').classList.remove('bad'); }
         else if(f === 'delete'){
           if(!armed){ armed = true; b.classList.add('armed'); b.innerHTML = `${ICON.trash}Toca otra vez para eliminar`; return; }
           const backup = {...existing}; delete backup.id;
@@ -2621,7 +2698,7 @@ function openSettings(){
       sheet.oninput = e => {
         const el = e.target, i = +el.dataset.i;
         if(el.dataset.f === 'mname') draft.members[i].name = el.value;
-        if(el.dataset.f === 'rname') draft.rooms[i].name = el.value;
+        if(el.dataset.f === 'rname'){ draft.rooms[i].name = el.value; delete draft.rooms[i].short; }
         if(el.dataset.f === 'remo') draft.rooms[i].emoji = el.value;
       };
       sheet.onclick = async e => {
