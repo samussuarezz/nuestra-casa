@@ -683,6 +683,15 @@ body.splashing .hero.enter .iso-tile,body.splashing .hero.enter .iso-room{animat
 .home .iso-wrap{margin:14px -4px 0}
 #iWhole{position:relative;left:auto;bottom:auto;display:flex;justify-content:center;margin-top:6px}
 
+/* ---------- v6: semana y reinicio de puntos ---------- */
+.days{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surface)}
+.days button{width:34px;height:34px;border-radius:10px;font-weight:900;font-size:13.5px;color:var(--ink-2)}
+.days button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.reset-btn{width:100%;justify-content:center;height:46px;background:var(--surface);color:var(--c-red)}
+.reset-btn.armed{background:var(--c-red);color:#fff}
+.reset-note{display:flex;align-items:center;gap:8px;margin:4px 2px 8px;font-size:13px;font-weight:800;color:var(--ink-3)}
+.reset-note svg{width:16px;height:16px}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
@@ -870,14 +879,19 @@ function lsGet(k){ try { return localStorage.getItem(k); } catch { return null; 
 function lsSet(k, v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} }
 function rid(){ return Math.random().toString(36).slice(2, 7); }
 
-/* Fechas: la semana va de lunes 00:00 a domingo 23:59 (hora local) */
+/* Fechas: la semana va del día de inicio 00:00 al día anterior 23:59 (hora local) */
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const parseYmd = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
 const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const today = () => startOfDay(new Date());
-const weekStart = d => { const x = startOfDay(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+/* Día en que empieza la semana (0 = domingo … 6 = sábado). Lo define la familia en Ajustes; por defecto lunes. */
+let WEEK_DAY = 1;
+const DAY_NAMES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const weekStartName = () => DAY_NAMES[WEEK_DAY];
+const weekEndName = () => DAY_NAMES[(WEEK_DAY + 6) % 7];
+const weekStart = d => { const x = startOfDay(d); x.setDate(x.getDate() - ((x.getDay() - WEEK_DAY + 7) % 7)); return x; };
 const weekIdOf = iso => ymd(weekStart(new Date(iso)));
 function currentWeek(offset = 0){ const s = addDays(weekStart(new Date()), offset * 7); return {id: ymd(s), start: s, end: addDays(s, 7)}; }
 const fmtShort = new Intl.DateTimeFormat('es-CO', {day:'numeric', month:'short'});
@@ -960,7 +974,7 @@ function guessCat(name){
 const initialTab = () => { const h = (location.hash || '').slice(1); return ['inicio','tareas','ranking','mercado'].includes(h) ? h : 'inicio'; };
 const S = {
   online:true, synced:false, needCode:false, codeError:'', booting:false, subscribed:false,
-  configLoaded:false, configExists:false, members:[], rooms:DEFAULT_ROOMS,
+  configLoaded:false, configExists:false, members:[], rooms:DEFAULT_ROOMS, pointsSince:'',
   pending:[], pendingLoaded:false, done:[], doneLoaded:false,
   groceries:[], gLoaded:false, weeks:{}, catalog:[], catalogMap:{},
   me: lsGet('casa.me'), forcePicker:false, obNames:[],
@@ -1002,11 +1016,12 @@ function reviewState(t){
   const status = oks >= need ? 'ok' : nos > others.length - need ? 'no' : 'wait';
   return {status, legacy:false, need, oks, nos, revs, others};
 }
+const afterReset = t => !S.pointsSince || String(t.doneAt || '') >= S.pointsSince;
 const rvClear = t => Object.fromEntries(Object.keys(t).filter(k => k.startsWith('rv_')).map(k => [k, null]));
 function toReview(){
   if(!S.me) return [];
   const since = Date.now() - 14 * 864e5;
-  return S.done.filter(t => t.doneBy && t.doneBy !== S.me && !t['rv_' + S.me] && Date.parse(t.doneAt) > since && reviewState(t).status === 'wait')
+  return S.done.filter(t => t.doneBy && t.doneBy !== S.me && !t['rv_' + S.me] && Date.parse(t.doneAt) > since && afterReset(t) && reviewState(t).status === 'wait')
     .sort((a, b) => String(b.doneAt).localeCompare(String(a.doneAt)));
 }
 
@@ -1014,7 +1029,7 @@ function scoresFor(wid){
   const acc = {};
   S.members.forEach(m => acc[m.id] = {pts:0, count:0, pend:0});
   for(const t of S.done){
-    if(!t.doneAt || weekIdOf(t.doneAt) !== wid) continue;
+    if(!t.doneAt || weekIdOf(t.doneAt) !== wid || !afterReset(t)) continue;
     const a = acc[t.doneBy];
     if(!a) continue;
     const st = reviewState(t).status;
@@ -1343,6 +1358,9 @@ function subscribe(){
     if(s.exists){
       const d = s.data() || {};
       S.configExists = true;
+      S.pointsSince = typeof d.pointsSince === 'string' ? d.pointsSince : '';
+      const wd = Number(d.weekDay);
+      WEEK_DAY = Number.isInteger(wd) && wd >= 0 && wd <= 6 ? wd : 1;
       S.members = (Array.isArray(d.members) ? d.members : []).filter(m => m && m.id && m.name).map(m => ({id:String(m.id), name:String(m.name).slice(0, 24), color:safeColor(m.color), emoji:m.emoji ? String(m.emoji).slice(0, 8) : ''}));
       S.rooms = Array.isArray(d.rooms) && d.rooms.length ? d.rooms.filter(r => r && r.id && r.name).map(r => ({id:String(r.id), name:String(r.name).slice(0, 24), emoji:String(r.emoji || '📍').slice(0, 8), color:safeColor(r.color), w:[1,2,3,4].includes(r.w) ? r.w : 2, h:r.h === 2 ? 2 : 1, ...(Array.isArray(r.plan) && r.plan.length === 4 && r.plan.every(v => isFinite(v)) ? {plan: r.plan.map(Number)} : {})})) : DEFAULT_ROOMS;
     } else {
@@ -1950,7 +1968,7 @@ const Tareas = {
     if(S.taskView === 'plan'){ filters.innerHTML = ''; body.innerHTML = planHTML(); return; }
 
     const wk = currentWeek();
-    const doneWeek = S.done.filter(t => weekIdOf(t.doneAt) === wk.id);
+    const doneWeek = S.done.filter(t => weekIdOf(t.doneAt) === wk.id && afterReset(t));
     const whoChip = (v, label, pressed, av = '') => `<button class="fchip ${av ? '' : 'plain'}" data-act="twho" data-v="${esc(v)}" aria-pressed="${pressed}">${av}${label}</button>`;
     const room = S.taskRoom ? roomById(S.taskRoom) : null;
     filters.innerHTML = `<div class="filters">
@@ -2109,6 +2127,7 @@ const Ranking = {
     }
 
     $('#rBody').innerHTML = `
+      ${S.pointsSince && new Date(S.pointsSince) > wk.start ? `<p class="reset-note">${ICON.undo}Puntos contados desde el reinicio: ${esc(relTime(S.pointsSince))}</p>` : ''}
       <div class="week-row"><span>Semana ${weekRange(wk)}</span><span class="pill-time">${ICON.clock}Cierra en ${countdown()}</span></div>
       <div class="bento" style="margin-top:14px"><button class="tile ticket span2" data-act="prize">
         <span class="tl">${ICON.gift} Premio para quien gane</span>
@@ -2127,7 +2146,7 @@ const Ranking = {
       </div>
       <div class="sec-h"><h2>Cómo se ganan puntos</h2></div>
       <div class="rules">${Object.entries(DIFFS).map(([k, d]) => `<div class="rule d-${k}"><b>+${d.pts}</b><span>${d.label}</span><small>${d.hint}</small></div>`).join('')}</div>
-      <p class="note">Los puntos de una tarea cuentan cuando al menos 2 de los demás la califican con 👍 Bien hecha. La semana va de lunes a domingo. Quien tenga más puntos el domingo a la medianoche gana el premio para la semana siguiente. Si hay empate, ganan los dos.</p>
+      <p class="note">Los puntos de una tarea cuentan cuando al menos 2 de los demás la califican con 👍 Bien hecha. La semana va de ${weekStartName()} a ${weekEndName()}. Quien tenga más puntos el ${weekEndName()} a la medianoche gana el premio para la semana siguiente. Si hay empate, ganan los dos.</p>
       ${hist.length ? `<div class="sec-h"><h2>Salón de la fama</h2></div><div class="hof">${hist.map(h => `<div class="hof-row t-${safeColor(h.win[0].m.color)}">${avatar(h.win[0].m, 'sm')}<span class="grow"><span class="wk">${weekRange(h.w)}</span><br><b>${esc(joinNames(h.win.map(x => x.m.name)))}</b>${h.prize ? `<span class="hp"> · ${esc(h.prize)}</span>` : ''}</span><span class="rp">${h.win[0].pts} pts</span></div>`).join('')}</div>` : ''}
     `;
   },
@@ -2508,7 +2527,7 @@ function openPrizeSheet(){
   openSheet({
     title: 'Premio de la semana',
     body: `<form id="pf" novalidate>
-      <p class="sheet-p">Quien tenga más puntos el domingo a la medianoche se lo gana para la semana siguiente.${setBy ? ` Lo puso ${esc(setBy.name)}.` : ''}</p>
+      <p class="sheet-p">Quien tenga más puntos el ${weekEndName()} a la medianoche se lo gana para la semana siguiente.${setBy ? ` Lo puso ${esc(setBy.name)}.` : ''}</p>
       <label class="field"><span class="label">Premio</span><input class="input" id="pfIn" maxlength="80" placeholder="Ej: Escoge la comida del domingo" value="${esc(cur)}" autocomplete="off"></label>
       <div class="field"><span class="label">Ideas</span><div class="opts">${PRIZES.map(p => `<button type="button" class="pill" data-f="p" data-v="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>
       <button class="btn-primary" type="submit">${ICON.gift}Guardar premio</button>
@@ -2548,6 +2567,15 @@ function openSettings(){
         <button type="button" class="mini" data-f="rdel" data-i="${i}" aria-label="Quitar ${esc(r.name)}">${ICON.trash}</button>
       </div>`).join('');
   };
+  const paintWeek = () => {
+    const el = $('#stWeek'); if(!el) return;
+    const order = [1, 2, 3, 4, 5, 6, 0], ini = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+    const since = S.pointsSince ? new Date(S.pointsSince) : null;
+    el.innerHTML = `<div class="look-row"><span>Empieza el</span><div class="days" role="group" aria-label="Día en que empieza la semana">${order.map(d => `<button type="button" data-f="wday" data-v="${d}" aria-pressed="${WEEK_DAY === d}" aria-label="${cap(DAY_NAMES[d])}">${ini[d]}</button>`).join('')}</div></div>
+      <p class="note" style="margin:2px 0 10px">Va de ${weekStartName()} a ${weekEndName()}. Gana el premio quien más puntos tenga al terminar el ${weekEndName()}.</p>
+      <button type="button" class="btn-text reset-btn" data-f="reset">${ICON.undo}Reiniciar los puntos de todos</button>
+      <p class="note" style="margin:8px 0 6px">Los puntos vuelven a 0 desde ese momento para todos. Las tareas no se borran.${since ? ` Último reinicio: ${esc(relTime(S.pointsSince))}` : ''}</p>`;
+  };
   openSheet({
     title: 'Ajustes de la casa',
     body: `<p class="sheet-p">Los cambios se ven en los celulares de todos.</p>
@@ -2558,6 +2586,9 @@ function openSettings(){
         <button type="button" class="addrow" data-f="radd">${ICON.plus}Añadir lugar</button></div>
       <p class="form-err" id="stErr" hidden></p>
       <button class="btn-primary" type="button" data-f="save">Guardar cambios</button>
+      <div class="field"><span class="label">Semana y puntos</span>
+        <div class="look" id="stWeek"></div>
+      </div>
       <div class="field"><span class="label">Invitar a la familia</span>
         <div class="invite">
           <p class="lbl">Código de la casa</p>
@@ -2575,6 +2606,7 @@ function openSettings(){
           ${lookRow('Letra', 'text', [['1', '<span style="font-size:13px">Aa</span>'], ['1.1', '<span style="font-size:16px">Aa</span>'], ['1.2', '<span style="font-size:19px">Aa</span>']], ['Normal', 'Grande', 'Muy grande'])}
           ${lookRow('Animaciones', 'motion', [['on', 'Sí'], ['off', 'Pocas']])}
         </div>
+        ${isIOS() && isStandalone() ? `<p class="note" style="margin-top:6px">En iPhone, la franja de la hora la pinta el celular, no la app. Si eliges Oscuro aquí con el iPhone en modo claro, esa franja se queda clara.</p>` : ''}
       </div>
       <div class="field"><span class="label">Este celular</span>
         <div class="opts">
@@ -2585,6 +2617,7 @@ function openSettings(){
       </div>`,
     onMount(sheet){
       paint();
+      paintWeek();
       sheet.oninput = e => {
         const el = e.target, i = +el.dataset.i;
         if(el.dataset.f === 'mname') draft.members[i].name = el.value;
@@ -2604,6 +2637,21 @@ function openSettings(){
           LOOK[b.dataset.k] = b.dataset.v; lsSet('casa.' + b.dataset.k, b.dataset.v); applyLook(); chromeKey = '';
           b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
           render();
+        }
+        else if(f === 'wday'){
+          const v = +b.dataset.v;
+          if(v === WEEK_DAY) return;
+          const ok = await write(() => DB.doc('config/house').update({weekDay: v, updatedAt: new Date().toISOString()}));
+          if(ok){ WEEK_DAY = v; paintWeek(); render(); toast(`Listo: la semana ahora va de ${weekStartName()} a ${weekEndName()}.`, {tone:'sky', ms:2800}); }
+        }
+        else if(f === 'reset'){
+          if(!b.classList.contains('armed')){ b.classList.add('armed'); b.innerHTML = `${ICON.undo}Toca otra vez para reiniciar`; return; }
+          const prev = S.pointsSince || null;
+          const ok = await write(() => DB.doc('config/house').update({pointsSince: new Date().toISOString(), pointsSinceBy: S.me || null}));
+          if(ok){
+            paintWeek(); render();
+            toast('Puntos en 0 para todos. ¡Arranca la competencia!', {tone:'grape', undo: () => write(() => DB.doc('config/house').update({pointsSince: prev}))});
+          }
         }
         else if(f === 'switch'){ closeSheet(); S.forcePicker = true; render(); }
         else if(f === 'share'){ shareInvite(); }
@@ -2628,7 +2676,7 @@ function openSettings(){
           if(!rooms.length){ err.textContent = 'Agrega al menos un lugar de la casa.'; err.hidden = false; return; }
           members.forEach(m => { if(!m.id) m.id = slug(m.name) + '-' + rid(); });
           rooms.forEach(r => { if(!r.id) r.id = slug(r.name) + '-' + rid(); });
-          const ok = await write(() => DB.doc('config/house').set({members, rooms, updatedAt:new Date().toISOString()}));
+          const ok = await write(() => DB.doc('config/house').update({members, rooms, updatedAt:new Date().toISOString()}));
           if(ok){ closeSheet(); toast('Ajustes guardados', {tone:'mint', ms:2000}); }
         }
       };
