@@ -1,5 +1,5 @@
-/* Nuestra Casa — service worker: abre la app sin internet y la actualiza sola. */
-const VERSION = 'casa-v1';
+/* PC 3051 — service worker: abre la app sin internet, la actualiza sola y muestra los avisos. */
+const VERSION = 'casa-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.svg'];
 
 self.addEventListener('install', e => {
@@ -52,4 +52,36 @@ self.addEventListener('fetch', e => {
       return hit || net;
     }));
   }
+});
+
+/* ---------- Avisos (Web Push) ---------- */
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = {body: e.data ? e.data.text() : ''}; }
+  const opts = {
+    body: d.body || '',
+    icon: './icon-192.png',
+    badge: './badge-96.png',
+    data: {url: d.url || './'},
+    lang: 'es',
+  };
+  if(d.tag){ opts.tag = String(d.tag); opts.renotify = true; }
+  const jobs = [self.registration.showNotification(d.title || 'PC 3051', opts)];
+  // número en el ícono de la app: tus tareas de hoy y las atrasadas
+  const nav = self.navigator;
+  if(typeof d.badge === 'number' && nav && 'setAppBadge' in nav){
+    jobs.push((d.badge > 0 ? nav.setAppBadge(d.badge) : nav.clearAppBadge()).catch(() => {}));
+  }
+  e.waitUntil(Promise.all(jobs));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(list => {
+    for(const c of list){
+      if(c.url.startsWith(self.registration.scope) && 'focus' in c){ c.postMessage({type: 'open', url}); return c.focus(); }
+    }
+    return self.clients.openWindow ? self.clients.openWindow(url) : null;
+  }));
 });

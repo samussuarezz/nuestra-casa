@@ -704,6 +704,120 @@ body.splashing .hero.enter .iso-tile,body.splashing .hero.enter .iso-room{animat
 @media (min-width:600px){
   .app{padding-top:8px}
 }
+/* ---------- v8: casa de muñecas ---------- */
+:root{
+  --dh-sh:#5E5040; --dh-out:rgba(45,35,70,.13); --dh-shadow:rgba(70,50,30,.13);
+  --dh-wall:#F8F5F0; --dh-win:#B9D7EC; --dh-glt:#CBE5F6; --dh-door:#FFFFFF;
+  --dh-wh:#FFFFFF; --dh-k:#3B3A42; --dh-k2:#25252B; --dh-dw:#6E5747; --dh-lw:#DCC09A; --dh-tx:#A8ACB6; --dh-tx2:#C4C7CE; --dh-cu:#F2D06A;
+  --dh-st:#EFECE7; --dh-mt:#C8CCD3; --dh-cer:#FCFDFE; --dh-water:#BDE2F3; --dh-gl:#CBE6F7; --dh-shade:#FFF3D9; --dh-lf:#55A85E; --dh-lf2:#3E8C4C; --dh-pot:#C9855C;
+  --dh-wood:#E6CDA7; --dh-wood-l:#D5B78E; --dh-tile:#F0ECE5; --dh-tile-l:#DED8CE; --dh-stone:#E2DBD1; --dh-stone-l:#D6CEC3; --dh-deck:#CDA57D; --dh-deck-l:#B88F67;
+  --dh-rug:#F6F3EE; --dh-dim:rgba(28,22,48,.42); --dh-glow-a:rgba(255,196,110,0); --dh-glow-b:rgba(255,196,110,0);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --dh-sh:#000; --dh-out:rgba(0,0,0,.45); --dh-shadow:rgba(0,0,0,.28);
+    --dh-wall:#3D395A; --dh-win:#2E4A70; --dh-glt:#4A6C9E; --dh-door:#4C4769;
+    --dh-wh:#A9A5BF; --dh-k:#1C1A25; --dh-k2:#111017; --dh-dw:#433545; --dh-lw:#76624F; --dh-tx:#5D5B77; --dh-tx2:#716F8B; --dh-cu:#B0943F;
+    --dh-st:#908CA7; --dh-mt:#7A7793; --dh-cer:#ABA8C2; --dh-water:#3C5F84; --dh-gl:#4A6C9E; --dh-shade:#FFE2A6; --dh-lf:#307548; --dh-lf2:#255C39; --dh-pot:#714C39;
+    --dh-wood:#5C4838; --dh-wood-l:#4E3D30; --dh-tile:#4B4864; --dh-tile-l:#423F59; --dh-stone:#48445F; --dh-stone-l:#403C56; --dh-deck:#52402F; --dh-deck-l:#46362A;
+    --dh-rug:#3B3756; --dh-dim:rgba(4,3,10,.6); --dh-glow-a:rgba(255,190,105,.5); --dh-glow-b:rgba(255,190,105,.2);
+  }
+}
+:root[data-theme="dark"]{
+  --dh-sh:#000; --dh-out:rgba(0,0,0,.45); --dh-shadow:rgba(0,0,0,.28);
+  --dh-wall:#3D395A; --dh-win:#2E4A70; --dh-glt:#4A6C9E; --dh-door:#4C4769;
+  --dh-wh:#A9A5BF; --dh-k:#1C1A25; --dh-k2:#111017; --dh-dw:#433545; --dh-lw:#76624F; --dh-tx:#5D5B77; --dh-tx2:#716F8B; --dh-cu:#B0943F;
+  --dh-st:#908CA7; --dh-mt:#7A7793; --dh-cer:#ABA8C2; --dh-water:#3C5F84; --dh-gl:#4A6C9E; --dh-shade:#FFE2A6; --dh-lf:#307548; --dh-lf2:#255C39; --dh-pot:#714C39;
+  --dh-wood:#5C4838; --dh-wood-l:#4E3D30; --dh-tile:#4B4864; --dh-tile-l:#423F59; --dh-stone:#48445F; --dh-stone-l:#403C56; --dh-deck:#52402F; --dh-deck-l:#46362A;
+  --dh-rug:#3B3756; --dh-dim:rgba(4,3,10,.6); --dh-glow-a:rgba(255,190,105,.5); --dh-glow-b:rgba(255,190,105,.2);
+}
+.dh{display:block;width:100%;height:auto;overflow:visible;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dh [data-act]{cursor:pointer}
+.dh .m-wall{--m:var(--dh-wall)} .dh .m-win{--m:var(--dh-win)} .dh .m-door{--m:var(--dh-door)} .dh .m-glt{--m:var(--dh-glt)}
+.dh .m-wh{--m:var(--dh-wh)} .dh .m-k{--m:var(--dh-k)} .dh .m-k2{--m:var(--dh-k2)} .dh .m-dw{--m:var(--dh-dw)} .dh .m-lw{--m:var(--dh-lw)}
+.dh .m-tx{--m:var(--dh-tx)} .dh .m-tx2{--m:var(--dh-tx2)} .dh .m-cu{--m:var(--dh-cu)} .dh .m-st{--m:var(--dh-st)} .dh .m-mt{--m:var(--dh-mt)}
+.dh .m-cer{--m:var(--dh-cer)} .dh .m-water{--m:var(--dh-water)} .dh .m-shade{--m:var(--dh-shade)} .dh .m-lf{--m:var(--dh-lf)} .dh .m-lf2{--m:var(--dh-lf2)} .dh .m-pot{--m:var(--dh-pot)}
+.dh .m-gl{--m:var(--dh-gl);opacity:.62}
+.dh .m-acc{--m:color-mix(in oklab,var(--tone) 62%,var(--dh-wh))}
+.dh .t{fill:var(--m)}
+.dh .tl{fill:color-mix(in oklab,var(--m) 88%,var(--dh-sh))}
+.dh .s1,.dh .s2,.dh .s3{stroke-width:.5;stroke-linejoin:round}
+.dh .s1{fill:color-mix(in oklab,var(--m) 93%,var(--dh-sh));stroke:color-mix(in oklab,var(--m) 93%,var(--dh-sh))}
+.dh .s2{fill:color-mix(in oklab,var(--m) 84%,var(--dh-sh));stroke:color-mix(in oklab,var(--m) 84%,var(--dh-sh))}
+.dh .s3{fill:color-mix(in oklab,var(--m) 74%,var(--dh-sh));stroke:color-mix(in oklab,var(--m) 74%,var(--dh-sh))}
+.dh .m-gl.s1,.dh .m-gl.s2,.dh .m-gl.s3{stroke-width:0}
+.dh .dh-out{fill:var(--dh-out)}
+.dh .f-wood{fill:url(#dhWood)} .dh .f-tile{fill:url(#dhTile)} .dh .f-stone{fill:url(#dhStone)} .dh .f-deck{fill:url(#dhDeck)}
+.dh .pw{fill:var(--dh-wood)} .dh .pl{stroke:var(--dh-wood-l);stroke-width:1;fill:none}
+.dh .pt0{fill:var(--dh-tile)} .dh .pl2{stroke:var(--dh-tile-l);stroke-width:.5;fill:none}
+.dh .ps{fill:var(--dh-stone)} .dh .pl3{stroke:var(--dh-stone-l);stroke-width:.5;fill:none}
+.dh .pd{fill:var(--dh-deck)} .dh .pl4{stroke:var(--dh-deck-l);stroke-width:1;fill:none}
+.dh .dh-f{stroke:none}
+.dh .dh-rug{fill:color-mix(in oklab,var(--tone) 20%,var(--dh-rug))}
+.dh .dh-rug-b{fill:none;stroke:color-mix(in oklab,var(--tone) 45%,var(--dh-rug));stroke-width:1.2}
+.dh .dh-mat{fill:color-mix(in oklab,var(--tone) 38%,var(--dh-rug))}
+.dh .dh-tray{fill:var(--dh-cer);stroke:color-mix(in oklab,var(--dh-cer) 85%,var(--dh-sh));stroke-width:.8} .dh .dh-drain{fill:var(--dh-mt)}
+.dh .dh-sh{fill:var(--dh-shadow)}
+.dh .dh-dim{fill:var(--dh-dim);pointer-events:none;animation:dhFade .35s ease both}
+.dh .dh-ring{fill:none;stroke:var(--tone);stroke-width:2.2;stroke-dasharray:5 4;pointer-events:none;animation:dhFade .35s ease both}
+@keyframes dhFade{from{opacity:0}}
+.dh .g0{stop-color:var(--dh-glow-a)} .dh .g1{stop-color:var(--dh-glow-b)} .dh .g2{stop-color:rgba(255,190,105,0)}
+.dh .dh-lights{pointer-events:none}
+.dh .dh-tops{pointer-events:none}
+.dh .dh-pin .dpl{fill:var(--surface);stroke:color-mix(in oklab,var(--tone) 35%,transparent);stroke-width:1}
+.dh .dh-pin .dpe{font-size:8.6px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.dh .dh-pin .dpn{font-family:var(--font-body);font-weight:800;font-size:8.5px;fill:var(--ink)}
+.dh .dh-pin .dpc{fill:var(--tone);stroke:var(--surface);stroke-width:1.6} .dh .dh-pin.late .dpc{fill:var(--c-red)}
+.dh .dh-pin .dpt{font-family:var(--font-display);font-weight:800;font-size:7.6px;fill:var(--on-tone)} .dh .dh-pin.late .dpt{fill:#fff}
+.dh .dh-pin{scale:var(--pz,1);transform-box:fill-box;transform-origin:center;transition:opacity .3s}
+.dh .dh-pin:focus{outline:none} .dh .dh-pin:focus-visible .dpl{stroke:var(--focus);stroke-width:2.5}
+.dh .dh-pin:active .dpl{fill:color-mix(in oklab,var(--tone) 16%,var(--surface))}
+.dh .dh-pin.on .dpl{fill:var(--tone);stroke:var(--tone)} .dh .dh-pin.on .dpn{fill:var(--on-tone)} .dh .dh-pin.on .dpc{stroke:var(--tone)}
+.dh.zoomed .dh-pin:not(.on){opacity:.3}
+.dh .dh-dim,.dh .dh-ring{transition:opacity .35s}
+.dh.unzoom .dh-dim,.dh.unzoom .dh-ring{opacity:0}
+.dh.unzoom .dh-pin{opacity:1}
+.iso-wrap .dh{margin:0 auto;max-width:520px}
+svg.dh{overflow:hidden;border-radius:18px}
+.rs-tasks .task .meta .chip:first-child{display:none}
+.hero.enter .dh{animation:dhIn .7s cubic-bezier(.2,.9,.3,1) .05s backwards}
+.hero.enter .dh .dh-pin{animation:dhPop .55s cubic-bezier(.2,1.5,.4,1) backwards;animation-delay:calc(var(--i,0) * 55ms + 420ms)}
+@keyframes dhIn{from{opacity:0;transform:translateY(10px) scale(.97)}}
+@keyframes dhPop{from{opacity:0;transform:translateY(5px) scale(.5)}}
+body.splashing .hero.enter .dh,body.splashing .hero.enter .dh .dh-pin{animation-play-state:paused}
+.chip-row{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px}
+.chip-row .whole-chip{margin:0}
+/* hoja de un lugar */
+.sheet.sheet-room{max-height:min(60vh,600px)}
+.scrim.lite{background:rgba(20,16,40,.12)}
+.rs-sub{margin:0 0 12px}
+.rs-late{color:var(--c-red);font-weight:900}
+.rs-empty{padding:18px;box-shadow:none;background:var(--surface-2)}
+.rs-empty .art{width:60px;height:60px;font-size:30px;border-radius:22px;margin-bottom:2px}
+.rs-empty h3{font-size:17px}
+.rs-empty p{font-size:13.5px;color:var(--ink-3);font-weight:700}
+.rs-done{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+.rs-d{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--ink-2)}
+.rs-d .ck{width:24px;height:24px;flex:none;border-radius:9px;display:grid;place-items:center;background:color-mix(in oklab,var(--c-mint) 18%,var(--surface));color:var(--c-mint)}
+.rs-d .ck svg{width:14px;height:14px}
+.rs-d .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs-d .who{font-size:12.5px;color:var(--ink-3)}
+.rs-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.rs-actions .btn-text{height:46px;flex:1 1 140px;justify-content:center}
+.rs-actions .rs-add{background:var(--tone);color:var(--on-tone)}
+/* avisos */
+.push-btn{height:46px;justify-content:center;background:var(--surface);margin-top:6px}
+.push-row>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.push-row>span b{font-weight:800;color:var(--ink-2)}
+.push-row small{font-size:12px;color:var(--ink-3);font-weight:700;line-height:1.35}
+.tgl{width:50px;height:30px;flex:none;border-radius:999px;background:color-mix(in oklab,var(--ink-3) 38%,var(--surface));position:relative;transition:background .2s}
+.tgl i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.2,.9,.3,1.2)}
+.tgl[aria-checked="true"]{background:var(--c-mint)} .tgl[aria-checked="true"] i{transform:translateX(20px)}
+.hour-in{width:auto;height:40px;padding:0 10px;font-size:14.5px;border-radius:12px;background:var(--surface)}
+.push-acts{display:flex;flex-wrap:wrap;gap:8px;padding:8px 0 6px}
+.push-acts .btn-text{background:var(--surface)}
+.push-card{background:color-mix(in oklab,var(--c-grape) 11%,var(--surface))}
+.push-card .ic{background:var(--c-grape)}
 </style>
 </head>
 <body>
@@ -841,6 +955,7 @@ const ICON = {
   cal: sv('<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
   repeat: sv('<path d="M4 11V9.6A3.6 3.6 0 0 1 7.6 6H19m-3-3 3 3-3 3M20 13v1.4a3.6 3.6 0 0 1-3.6 3.6H5m3 3-3-3 3-3"/>'),
   users: sv('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0M15.5 5.6a3.2 3.2 0 0 1 0 6M17.6 14.3a5.5 5.5 0 0 1 2.9 5.2"/>'),
+  bell: sv('<path d="M6.2 16.4V11a5.8 5.8 0 0 1 11.6 0v5.4l1.7 2.1H4.5z"/><path d="M10 21a2.3 2.3 0 0 0 4 0"/>'),
   gear: sv('<path d="M10.3 3.6h3.4l.5 2.4 1.6.9 2.3-.8 1.7 2.9-1.8 1.6v1.8l1.8 1.6-1.7 2.9-2.3-.8-1.6.9-.5 2.4h-3.4l-.5-2.4-1.6-.9-2.3.8-1.7-2.9 1.8-1.6v-1.8L4.2 9l1.7-2.9 2.3.8 1.6-.9z"/><circle cx="12" cy="12" r="2.8"/>'),
   close: sv('<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>'),
   undo: sv('<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>'),
@@ -989,7 +1104,7 @@ const S = {
   tab: initialTab(), mounted:null,
   taskStatus:'pending', taskWho:'all', taskRoom:null, taskView: lsGet('casa.taskView') === 'plan' ? 'plan' : 'list',
   superMode: lsGet('casa.super') === '1',
-  completing: new Set(), gCat:null,
+  completing: new Set(), gCat:null, roomSheet:null,
 };
 let DB = null;
 
@@ -1505,6 +1620,7 @@ async function boot(){
     else if(r === 'bad') S.codeError = fromUrl ? 'Ese link trae un código que no abre ninguna casa. Revisa el código.' : S.codeError;
   }
   render();
+  if(r === 'ok') setTimeout(pushRefresh, 2500);
   setInterval(() => { if(DB && !document.hidden) syncNow(); }, 30000);
   document.addEventListener('visibilitychange', () => { if(DB && !document.hidden){ syncNow(); if(!RT.ws) rtConnect(); } });
   window.addEventListener('online', () => { if(DB){ syncNow(); if(!RT.ws) rtConnect(); } });
@@ -1582,6 +1698,9 @@ function doRender(){
   renderTabs();
   renderGate();
   syncChrome();
+  if(S.roomSheet){ const el = $('#rsBody'); if(el) setHTML(el, roomSheetHTML(S.roomSheet)); }
+  dhSync();
+  syncBadge();
   if(!splashGone && gateKey !== 'loading' && !S.booting) hideSplash();
 }
 
@@ -1818,10 +1937,572 @@ function insetOrtho(pts, g){
   return pts.map((p, i) => { const a = inward(pts[(i - 1 + n) % n], p), b = inward(p, pts[(i + 1) % n]); return [p[0] + (a[0] + b[0]) * g, p[1] + (a[1] + b[1]) * g]; });
 }
 
+/* ---------- Casa de muñecas: el plano real de PC 3051 visto desde arriba ----------
+   Unidades del plano ≈ 40 cm. La cámara mira desde arriba al centro de la casa (perspectiva),
+   así que se ven las caras de adentro de las paredes como en una maqueta. */
+const DH_SC = 10, DH_WALL = 4.2, DH_CAM = 58;
+const DH = (() => {
+  const R = (x, y, w, d) => [[x, y], [x + w, y], [x + w, y + d], [x, y + d]];
+  return {
+    c: [15, 16.75],
+    floors: [
+      ['hab-principal', 'wood', R(0, 0, 18.1, 7.8)],
+      ['bano-principal', 'tile', R(18.1, 0, 3.2, 4.8)],
+      ['hab-samu', 'wood', R(21.3, 0, 8.7, 7.7)],
+      ['hab-tin', 'wood', R(0, 7.8, 18.1, 7.9)],
+      ['banos', 'tile', R(21.3, 7.7, 8.7, 4.5)],
+      ['patio', 'deck', R(0, 15.7, 7.85, 9.1)],
+      ['sala', 'stone', [[18.1, 4.8], [21.3, 4.8], [21.3, 12.2], [30, 12.2], [30, 33.5], [23.9, 33.5], [23.9, 27.9], [18.7, 27.9], [18.7, 23.4], [7.85, 23.4], [7.85, 15.7], [10.2, 15.7], [10.2, 19.6], [16.2, 19.6], [16.2, 15.7], [18.1, 15.7]]],
+      ['estudio', 'stone', R(10.2, 15.7, 6, 3.9)],
+      ['comedor', 'stone', R(7.85, 23.4, 10.85, 4.5)],
+      ['lavadero', 'tile', R(0, 24.8, 7.85, 8.7)],
+      ['cocina', 'tile', R(7.85, 27.9, 16.05, 5.6)],
+    ],
+    pins: {'hab-principal':[14.6, 4.7], 'bano-principal':[19.7, 3.0], 'hab-samu':[25.6, 6.05], 'hab-tin':[12.3, 11.6], 'banos':[25.9, 10.5], 'estudio':[13.2, 19.0], 'patio':[3.9, 21.5], 'sala':[25.2, 22.7], 'comedor':[13.4, 26.3], 'lavadero':[3.9, 28.6], 'cocina':[14.2, 29.8]},
+    // [x1, y1, x2, y2, grosor, [[desde, hasta, tipo]]]  tipo: door (hueco), win (ventana), glass (puerta de vidrio), rail (baranda)
+    walls: [
+      [0, 0, 30, 0, .6, [[12.6, 17.4, 'win'], [18.8, 20.6, 'win'], [24, 28.6, 'win']]],
+      [30, 0, 30, 33.5, .6, [[8.8, 10.6, 'win'], [13.4, 18.2, 'win'], [21.6, 26, 'win']]],
+      [0, 33.5, 30, 33.5, .6, [[12.4, 17.4, 'win'], [24, 28.7, 'door']]],
+      [0, 0, 0, 33.5, .6, [[1.8, 5.8, 'win'], [9.4, 14.2, 'win'], [15.7, 24.8, 'rail'], [26.4, 29.8, 'win']]],
+      [0, 7.8, 18.1, 7.8, .36],
+      [18.1, 0, 18.1, 15.7, .36, [[1.6, 4.2, 'door'], [5.0, 7.3, 'door'], [8.2, 11.6, 'door']]],
+      [18.1, 4.8, 21.3, 4.8, .36],
+      [21.3, 0, 21.3, 12.2, .36, [[4.95, 7.25, 'door'], [8.0, 10.5, 'door']]],
+      [21.3, 7.7, 30, 7.7, .36],
+      [21.3, 12.2, 30, 12.2, .36],
+      [0, 15.7, 18.1, 15.7, .36],
+      [7.85, 15.7, 7.85, 27.9, .36, [[20.4, 23.6, 'glass']]],
+      [0, 24.8, 7.85, 24.8, .36],
+      [7.85, 30.6, 7.85, 33.5, .36],
+      [19.05, 30.4, 19.05, 33.5, .36],
+      [23.9, 29.8, 23.9, 33.5, .36],
+    ],
+    // [bisagra x, y, hacia la otra jamba x, y, lado que abre x, y, largo, grados]
+    doors: [
+      [18.1, 4.2, 0, -1, -1, 0, 2.6, 82], [18.1, 7.3, 0, -1, -1, 0, 2.3, 80], [18.1, 11.6, 0, -1, -1, 0, 3.4, 78],
+      [21.3, 4.95, 0, 1, 1, 0, 2.3, 80], [21.3, 10.5, 0, -1, 1, 0, 2.5, 84], [28.7, 33.5, -1, 0, 0, -1, 4.7, 72],
+    ],
+    items: [
+      ['hab-principal', 'rug', 5.0, 3.3, 7.0, 3.9], ['hab-principal', 'bed', 6.3, .3, 4.4, 5.5, 't'],
+      ['hab-principal', 'night', 4.95, .35, 1.15, 1.05], ['hab-principal', 'night', 10.9, .35, 1.15, 1.05],
+      ['hab-principal', 'ward', .32, 6.4, 4.7, 1.2], ['hab-principal', 'dresser', 9.0, 6.85, 3.8, .75],
+      ['hab-principal', 'desk', 14.0, .32, 3.4, 1.3, 'laptop'], ['hab-principal', 'chair', 15.7, 2.3, 'b'],
+      ['hab-principal', 'arm', .5, 2.6, 2.0, 2.0, 'l'], ['hab-principal', 'flamp', 1.2, 5.3], ['hab-principal', 'plant', 12.9, .95, .55],
+      ['bano-principal', 'shower', 18.28, .3, 2.84, 1.7, 'b'], ['bano-principal', 'toilet', 20.4, 3.45, 'l'],
+      ['bano-principal', 'sink', 18.35, 3.95, 1.5, .67], ['bano-principal', 'mat', 18.6, 2.35, 1.3, .8],
+      ['hab-samu', 'rug', 22.3, 2.5, 4.4, 3.9], ['hab-samu', 'bed', 24.3, 1.75, 5.4, 3.6, 'r'],
+      ['hab-samu', 'night', 28.5, .32, 1.2, 1.05], ['hab-samu', 'desk', 21.6, .32, 3.6, 1.3, 'monitor'],
+      ['hab-samu', 'chair', 23.4, 2.3, 'b'], ['hab-samu', 'ward', 25.0, 6.55, 4.7, .97], ['hab-samu', 'plant', 28.95, 5.95, .42],
+      ['hab-tin', 'rug', 1.4, 11.2, 6.0, 3.6], ['hab-tin', 'bed', 2.0, 7.98, 4.4, 5.4, 't'],
+      ['hab-tin', 'night', .6, 8.0, 1.15, 1.05], ['hab-tin', 'night', 6.6, 8.0, 1.15, 1.05],
+      ['hab-tin', 'ward', 9.0, 7.98, 5.0, 1.15], ['hab-tin', 'desk', 10.6, 14.4, 3.5, 1.12, 'mirror'],
+      ['hab-tin', 'chair', 12.35, 13.55, 't'], ['hab-tin', 'plant', 16.9, 14.8, .6], ['hab-tin', 'flamp', .95, 14.75],
+      ['banos', 'tub', 25.6, 7.88, 4.1, 1.9], ['banos', 'toilet', 27.5, 11.3, 'u'],
+      ['banos', 'sink', 23.9, 11.35, 1.7, .67], ['banos', 'mat', 25.6, 10.05, 1.5, .75],
+      ['estudio', 'rug', 11.2, 17.3, 4.0, 2.1], ['estudio', 'desk', 10.6, 15.88, 5.2, 1.55, 'study'], ['estudio', 'chair', 13.2, 18.15, 'b'],
+      ['patio', 'plant', .9, 16.6, .6], ['patio', 'plant', 6.9, 16.5, .55], ['patio', 'plant', .85, 20.3, .5],
+      ['patio', 'rtable', 3.9, 19.2, .75], ['patio', 'chairS', 2.55, 19.2], ['patio', 'chairS', 5.25, 19.2],
+      ['patio', 'lounger', 1.2, 22.9, 3.8, 1.4], ['patio', 'plant', 6.9, 23.9, .55],
+      ['sala', 'rug', 21.9, 14.0, 7.0, 7.0], ['sala', 'tv', 22.5, 12.38, 5.0, .72],
+      ['sala', 'sofa', 22.0, 18.6, 6.1, 2.1, 'b', 'l'], ['sala', 'sofa', 28.1, 14.0, 1.6, 6.7, 'r', 't'],
+      ['sala', 'coffee', 24.0, 15.3, 2.9, 1.6], ['sala', 'arm', 21.6, 14.4, 1.8, 1.8, 'l'],
+      ['sala', 'flamp', 29.15, 12.95], ['sala', 'plant', 29.0, 22.0, .75], ['sala', 'shelf', 8.03, 16.1, .8, 3.9],
+      ['sala', 'plant', 17.3, 16.6, .6], ['sala', 'runner', 18.75, 5.5, 1.9, 9.0], ['sala', 'mat', 24.6, 31.7, 3.6, 1.3],
+      ['sala', 'cab', 29.0, 26.4, .7, 3.6], ['sala', 'plant', 29.1, 24.6, .5],
+      ['comedor', 'bar', 8.03, 25.2, 10.67, 2.3],
+      ['comedor', 'stool', 10.2, 24.35], ['comedor', 'stool', 12.6, 24.35], ['comedor', 'stool', 15.0, 24.35], ['comedor', 'stool', 17.4, 24.35],
+      ['cocina', 'kitchen', 8.03, 31.6, 10.84, 1.6], ['cocina', 'fridge', 19.25, 31.2, 2.4, 2.0], ['cocina', 'micro', 21.75, 31.6, 1.97, 1.6],
+      ['lavadero', 'washer', .35, 31.3, 1.9, 1.9], ['lavadero', 'washer', 2.35, 31.3, 1.9, 1.9],
+      ['lavadero', 'lsink', 4.9, 31.55, 1.9, 1.65], ['lavadero', 'rack', .55, 25.6, 1.4, 4.2], ['lavadero', 'basket', 6.3, 26.4, .6],
+    ],
+    // luces que se prenden de noche [x, y, radio]
+    lights: [[19.7, 2.4, 3], [25.6, 10, 4], [3.9, 20, 4.5], [25.4, 17.4, 6.5], [13.2, 21, 5], [14.2, 30.4, 5.5], [3.9, 29, 4.5], [19.6, 9.6, 3.6], [27, 29.5, 4]],
+  };
+})();
+
+/* Proyección: punto del plano (x, y) a una altura z → coordenadas del SVG */
+const dhK = z => DH_CAM / (DH_CAM - z);
+const dhP = (x, y, z = 0) => { const s = dhK(z), [cx, cy] = DH.c; return [(cx + (x - cx) * s) * DH_SC, (cy + (y - cy) * s) * DH_SC]; };
+
+/* Dibuja la maqueta. o = {rooms:{id:{name, short, emoji, color}}, counts, lates, zoom} */
+let dhMemo = {key:'', svg:''};
+function dhSVG(o){
+  const key = JSON.stringify(o);
+  if(dhMemo.key === key) return dhMemo.svg;
+  const [cx, cy] = DH.c, SC = DH_SC, WH = DH_WALL;
+  const k = dhK, P = dhP;
+  const r1 = v => Math.round(v * 10) / 10;
+  const pp = (ps, z) => ps.map(p => P(p[0], p[1], z).map(r1).join(',')).join(' ');
+  const LT = [-.55, -.83];
+  const area = ps => ps.reduce((a, p, i) => { const q = ps[(i + 1) % ps.length]; return a + p[0] * q[1] - q[0] * p[1]; }, 0);
+  const R = (x, y, w, d) => [[x, y], [x + w, y], [x + w, y + d], [x, y + d]];
+  const rooms = o.rooms || {};
+  const toneOf = id => rooms[id] ? 't-' + rooms[id].color : 't-gray';
+
+  /* primitivas */
+  // caras laterales visibles de un prisma (desde la cámara) + la tapa
+  function sides(ps, z0, z1, mat){
+    const sg = area(ps) > 0 ? 1 : -1;
+    let s = '';
+    ps.forEach((a, i) => {
+      const b = ps[(i + 1) % ps.length], dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1;
+      const nx = sg * dy / ln, ny = -sg * dx / ln;
+      if(nx * (cx - a[0]) + ny * (cy - a[1]) <= 0) return;
+      const d = nx * LT[0] + ny * LT[1];
+      s += `<polygon class="m-${mat} ${d > .3 ? 's1' : d < -.3 ? 's3' : 's2'}" points="${pp([a, b], z0)} ${pp([b, a], z1)}"/>`;
+    });
+    return s;
+  }
+  const top = (ps, z, mat, cls = 't') => `<polygon class="m-${mat} ${cls}" points="${pp(ps, z)}"/>`;
+  function rtop(x, y, w, d, z, mat, rx = 0, cls = 't'){
+    const [ax, ay] = P(x, y, z), [bx, by] = P(x + w, y + d, z), s = k(z) * SC;
+    return `<rect class="m-${mat} ${cls}" x="${r1(ax)}" y="${r1(ay)}" width="${r1(bx - ax)}" height="${r1(by - ay)}"${rx ? ` rx="${r1(rx * s)}"` : ''}/>`;
+  }
+  const box = (x, y, w, d, z0, z1, mat, rx = 0) => sides(R(x, y, w, d), z0, z1, mat) + rtop(x, y, w, d, z1, mat, rx);
+  const prism = (ps, z0, z1, mat) => sides(ps, z0, z1, mat) + top(ps, z1, mat);
+  function circ(x, y, r, z, mat, cls = 't'){ const [px, py] = P(x, y, z); return `<circle class="m-${mat} ${cls}" cx="${r1(px)}" cy="${r1(py)}" r="${r1(r * k(z) * SC)}"/>`; }
+  function cyl(x, y, r, z0, z1, mat){
+    const [ax, ay] = P(x, y, z0), [bx, by] = P(x, y, z1), dx = bx - ax, dy = by - ay, ln = Math.hypot(dx, dy);
+    let s = circ(x, y, r, z0, mat, 's2');
+    if(ln > .05){ const nx = -dy / ln * r * SC, ny = dx / ln * r * SC; s += `<polygon class="m-${mat} s2" points="${r1(ax + nx)},${r1(ay + ny)} ${r1(bx + nx * k(z1))},${r1(by + ny * k(z1))} ${r1(bx - nx * k(z1))},${r1(by - ny * k(z1))} ${r1(ax - nx)},${r1(ay - ny)}"/>`; }
+    return s + circ(x, y, r, z1, mat);
+  }
+  // rectángulo local (u = a lo largo, v = a lo ancho) → del mundo, según hacia dónde mira la cabecera
+  function orient(x, y, w, d, head){
+    const L = head === 't' || head === 'b' ? d : w, Wd = head === 't' || head === 'b' ? w : d;
+    return {L, W: Wd, at: (u0, v0, ul, vl) => head === 't' ? [x + v0, y + u0, vl, ul] : head === 'b' ? [x + v0, y + d - u0 - ul, vl, ul] : head === 'l' ? [x + u0, y + v0, ul, vl] : [x + w - u0 - ul, y + v0, ul, vl]};
+  }
+
+  /* muebles */
+  const shadows = [], glows = [];
+  let tone = 't-gray';
+  const shade = (x, y, w, d, rx = .2) => shadows.push(`<rect class="dh-sh" x="${r1((x + .12) * SC)}" y="${r1((y + .2) * SC)}" width="${r1((w + .1) * SC)}" height="${r1((d + .1) * SC)}" rx="${r1(rx * SC)}"/>`);
+  const shadeC = (x, y, r) => shadows.push(`<circle class="dh-sh" cx="${r1((x + .12) * SC)}" cy="${r1((y + .2) * SC)}" r="${r1((r + .05) * SC)}"/>`);
+  const flatL = [], flat = {push: v => flatL.push(`<g class="${tone}">${v}</g>`)};
+  const K = {
+    rug(x, y, w, d){ flat.push(`<rect class="dh-rug" x="${r1(x * SC)}" y="${r1(y * SC)}" width="${r1(w * SC)}" height="${r1(d * SC)}" rx="${r1(.25 * SC)}"/><rect class="dh-rug-b" x="${r1((x + .3) * SC)}" y="${r1((y + .3) * SC)}" width="${r1((w - .6) * SC)}" height="${r1((d - .6) * SC)}" rx="${r1(.15 * SC)}"/>`); return ''; },
+    runner(x, y, w, d){ flat.push(`<rect class="dh-rug" x="${r1(x * SC)}" y="${r1(y * SC)}" width="${r1(w * SC)}" height="${r1(d * SC)}" rx="${r1(.2 * SC)}"/><rect class="dh-rug-b" x="${r1((x + .25) * SC)}" y="${r1((y + .25) * SC)}" width="${r1((w - .5) * SC)}" height="${r1((d - .5) * SC)}" rx="${r1(.1 * SC)}"/>`); return ''; },
+    mat(x, y, w, d){ flat.push(`<rect class="dh-mat" x="${r1(x * SC)}" y="${r1(y * SC)}" width="${r1(w * SC)}" height="${r1(d * SC)}" rx="${r1(.3 * SC)}"/>`); return ''; },
+    bed(x, y, w, d, head){
+      shade(x, y, w, d);
+      const O = orient(x, y, w, d, head), Q = (...a) => O.at(...a);
+      const pil = O.W >= 3.4 ? 2 : 1, pw = (O.W - .7 - (pil - 1) * .2) / pil;
+      let s = box(...Q(.35, 0, O.L - .35, O.W), 0, .9, 'dw', .15) + box(...Q(0, 0, .38, O.W), 0, 2.3, 'dw', .1);
+      s += box(...Q(.42, .1, O.L - .5, O.W - .2), .9, 1.55, 'wh', .3);
+      s += box(...Q(O.L * .4, .04, O.L * .6 - .1, O.W - .08), 1.55, 1.7, 'tx', .25) + rtop(...Q(O.L * .4, .04, .45, O.W - .08), 1.72, 'wh', .1);
+      s += rtop(...Q(O.L - 1.15, .04, .8, O.W - .08), 1.73, 'acc', .1);
+      for(let i = 0; i < pil; i++) s += box(...Q(.55, .35 + i * (pw + .2), 1.0, pw), 1.55, 2.05, 'wh', .3);
+      s += box(...Q(1.45, O.W / 2 - .45, .5, .9), 1.55, 2.0, 'acc', .2);
+      return s;
+    },
+    night(x, y, w, d){ shade(x, y, w, d, .1); glows.push([x + w / 2, y + d / 2, 2.6, 2.5]); return box(x, y, w, d, 0, 1.5, 'dw', .1) + cyl(x + w / 2, y + d / 2, .33, 1.5, 2.5, 'shade'); },
+    ward(x, y, w, d){ shade(x, y, w, d, .05); return box(x, y, w, d, 0, 3.5, 'lw', .05) + rtop(x + .12, y + .12, w - .24, d - .24, 3.5, 'lw', .04, 'tl'); },
+    dresser(x, y, w, d){ shade(x, y, w, d, .05); return box(x, y, w, d, 0, 1.9, 'dw', .05) + rtop(x + .3, y + .18, .8, .4, 1.95, 'acc', .05) + circ(x + w - .55, y + d / 2, .26, 2.3, 'lf'); },
+    desk(x, y, w, d, kind){
+      shade(x, y, w, d, .05);
+      let s = box(x, y, w, d, 0, 1.9, kind === 'study' ? 'lw' : 'k', .08);
+      const mx = x + w / 2;
+      if(kind === 'monitor') s += box(mx - .9, y + .2, 1.8, .16, 1.9, 3.1, 'k2') + rtop(mx - .75, y + .6, 1.5, .42, 1.92, 'mt', .05);
+      else if(kind === 'mirror') s += box(mx - .8, y + d - .3, 1.6, .12, 1.9, 3.0, 'gl') + circ(x + .45, y + .5, .2, 1.95, 'acc');
+      else { s += rtop(mx - .6, y + .3, 1.2, .78, 1.93, 'mt', .06) + rtop(mx - .5, y + .38, 1.0, .5, 1.95, 'k2', .04); }
+      if(kind === 'study' || kind === 'laptop'){ glows.push([x + w - .45, y + .45, 2.2, 2.6]); }
+      if(kind === 'study' || kind === 'laptop') s += cyl(x + w - .45, y + .45, .24, 1.9, 2.6, 'shade');
+      if(kind === 'study') s += circ(x + .5, y + .55, .25, 2.2, 'lf') + circ(x + 1.05, y + .5, .16, 1.98, 'acc');
+      return s;
+    },
+    chair(x, y, back){
+      shadeC(x, y, .5);
+      const off = {t:[0, -.45], b:[0, .45], l:[-.45, 0], r:[.45, 0]}[back];
+      const bw = back === 't' || back === 'b' ? [1.0, .22] : [.22, 1.0];
+      return cyl(x, y, .5, 0, 1.2, 'k') + box(x + off[0] - bw[0] / 2, y + off[1] - bw[1] / 2, bw[0], bw[1], 1.2, 2.3, 'k', .08);
+    },
+    arm(x, y, w, d, back){ return K.sofa(x, y, w, d, back, 'both', true); },
+    sofa(x, y, w, d, back, arms, single){
+      shade(x, y, w, d, .3);
+      const O = orient(x, y, w, d, back), Q = (...a) => O.at(...a);
+      let s = box(...Q(0, 0, O.L, O.W), 0, 1.0, 'tx', .25) + box(...Q(0, 0, .5, O.W), 1.0, 2.0, 'tx', .2);
+      // brazos en los extremos (l/t = al principio, r/b = al final)
+      const left = arms === 'both' || arms === 'l' || arms === 't', right = arms === 'both' || arms === 'r' || arms === 'b';
+      if(left) s += box(...Q(0, 0, O.L, .38), 1.0, 1.6, 'tx', .15);
+      if(right) s += box(...Q(0, O.W - .38, O.L, .38), 1.0, 1.6, 'tx', .15);
+      const v0 = left ? .42 : .05, v1 = O.W - (right ? .42 : .05), n = single ? 1 : Math.max(1, Math.round((v1 - v0) / 1.9)), cw = (v1 - v0) / n;
+      for(let i = 0; i < n; i++) s += box(...Q(.55, v0 + i * cw + .04, O.L - .62, cw - .08), 1.0, 1.25, 'tx2', .25);
+      s += box(...Q(.5, v0 + .15, .4, .85), 1.25, 1.9, 'cu', .15);
+      if(!single && n > 1) s += box(...Q(.5, v1 - 1.0, .4, .85), 1.25, 1.9, 'acc', .15);
+      return s;
+    },
+    coffee(x, y, w, d){ shade(x, y, w, d, .1); return box(x, y, w, d, 0, 1.0, 'k', .1) + rtop(x + .3, y + .3, .9, .6, 1.03, 'acc', .04) + circ(x + w - .5, y + d / 2, .3, 1.5, 'lf'); },
+    tv(x, y, w, d){ shade(x, y, w, d, .05); return box(x, y, w, d, 0, 1.3, 'dw', .05) + box(x + .5, y + .1, w - 1, .16, 1.3, 3.1, 'k2'); },
+    plant(x, y, r){ shadeC(x, y, r * .6); return cyl(x, y, r * .55, 0, 1.0, 'pot') + circ(x - r * .3, y + r * .15, r * .62, 2.0, 'lf2') + circ(x + r * .3, y - r * .1, r * .6, 2.4, 'lf') + circ(x - r * .05, y - r * .3, r * .5, 2.8, 'lf2') + circ(x + r * .1, y + r * .2, r * .42, 3.1, 'lf'); },
+    flamp(x, y){ glows.push([x, y, 3.4, 3.3]); return circ(x, y, .3, .05, 'k') + cyl(x, y, .5, 3.0, 3.35, 'shade'); },
+    toilet(x, y, dir){
+      const O = {l:[-1, 0], r:[1, 0], u:[0, -1], d:[0, 1]}[dir], vert = dir === 'u' || dir === 'd';
+      const tw = vert ? [.9, .38] : [.38, .9], tx = x - O[0] * .54 - tw[0] / 2, ty = y - O[1] * .54 - tw[1] / 2;
+      const bw = vert ? [.76, 1.0] : [1.0, .76], bx = x + O[0] * .2 - bw[0] / 2, by = y + O[1] * .2 - bw[1] / 2;
+      shade(Math.min(tx, bx), Math.min(ty, by), vert ? .9 : 1.45, vert ? 1.45 : .9, .3);
+      return box(bx, by, bw[0], bw[1], 0, 1.05, 'cer', .38) + rtop(bx + .1, by + .1, bw[0] - .2, bw[1] - .2, 1.07, 'cer', .3, 'tl') + box(tx, ty, tw[0], tw[1], 0, 1.85, 'cer', .08);
+    },
+    sink(x, y, w, d){ shade(x, y, w, d, .05); return box(x, y, w, d, 0, 2.1, 'wh', .06) + rtop(x + w / 2 - .45, y + .12, .9, d - .26, 2.12, 'cer', .22, 'tl') + circ(x + w / 2, y + d - .1, .08, 2.3, 'mt'); },
+    shower(x, y, w, d, gl){ flat.push(`<rect class="dh-tray" x="${r1(x * SC)}" y="${r1(y * SC)}" width="${r1(w * SC)}" height="${r1(d * SC)}" rx="${r1(.1 * SC)}"/><circle class="dh-drain" cx="${r1((x + w / 2) * SC)}" cy="${r1((y + d / 2) * SC)}" r="${r1(.14 * SC)}"/>`); return box(x + .1, y + d - .08, w * .62, .08, 0, 3.6, 'gl') + circ(x + w / 2, y + .25, .22, 3.4, 'mt'); },
+    tub(x, y, w, d){ shade(x, y, w, d, .45); return box(x, y, w, d, 0, 1.5, 'cer', .45) + rtop(x + .22, y + .22, w - .44, d - .44, 1.52, 'water', .55) + circ(x + w - .4, y + d / 2, .1, 1.6, 'mt'); },
+    rtable(x, y, r){ shadeC(x, y, r); return cyl(x, y, r, 1.7, 1.8, 'wh') + circ(x + .15, y - .1, .2, 2.0, 'lf'); },
+    chairS(x, y){ shadeC(x, y, .45); return cyl(x, y, .45, 0, 1.2, 'lw') + circ(x, y, .3, 1.22, 'acc'); },
+    lounger(x, y, w, d){ shade(x, y, w, d, .2); return box(x, y, w, d, 0, .8, 'lw', .15) + box(x + .15, y + .12, w - .3, d - .24, .8, 1.05, 'tx2', .3) + box(x + .15, y + .15, .8, d - .3, 1.05, 1.5, 'acc', .2); },
+    shelf(x, y, w, d){ shade(x, y, w, d, .05); let s = box(x, y, w, d, 0, 3.4, 'lw', .04); return s + rtop(x + .1, y + .2, w - .2, .5, 3.42, 'acc', .03) + rtop(x + .1, y + 1.1, w - .2, .35, 3.42, 'k2', .03) + circ(x + w / 2, y + d - .5, .28, 3.6, 'lf'); },
+    cab(x, y, w, d){ shade(x, y, w, d, .05); return box(x, y, w, d, 0, 2.0, 'lw', .05); },
+    bar(x, y, w, d){ shade(x, y, w, d, .05); return box(x + .2, y + .2, w - .4, d - .4, 0, 2.3, 'dw', .05) + box(x, y, w, d, 2.3, 2.45, 'st', .1) + circ(x + w - 1.2, y + d / 2, .45, 2.6, 'acc') + circ(x + w - 1.0, y + d / 2 - .15, .18, 2.7, 'lf'); },
+    stool(x, y){ shadeC(x, y, .48); return cyl(x, y, .48, 0, 1.85, 'k') + circ(x, y, .4, 1.86, 'lw'); },
+    kitchen(x, y, w, d){
+      shade(x, y, w, d, .05);
+      let s = box(x, y, w, d, 0, 2.2, 'wh', .03) + box(x, y, w, d, 2.2, 2.35, 'st', .03);
+      s += rtop(x + 1.2, y + .2, 2.4, 1.2, 2.37, 'k2', .1);
+      [[.5, .3], [1.6, .3], [.5, .85], [1.6, .85]].forEach(([a, b]) => { s += circ(x + 1.2 + a + .15, y + .2 + b + .02, .26, 2.39, 'mt', 'tl'); });
+      s += rtop(x + 6.0, y + .25, 2.2, 1.05, 2.37, 'mt', .15) + rtop(x + 6.15, y + .37, 1.9, .8, 2.38, 'k2', .12, 'tl') + circ(x + 7.1, y + d - .22, .1, 2.6, 'mt');
+      s += circ(x + 9.6, y + .8, .42, 2.5, 'acc') + circ(x + 4.6, y + .7, .3, 2.45, 'lw');
+      return s;
+    },
+    fridge(x, y, w, d){ shade(x, y, w, d, .08); return box(x, y, w, d, 0, 3.9, 'mt', .1) + rtop(x + .1, y + .1, w - .2, d - .2, 3.92, 'mt', .08, 'tl'); },
+    micro(x, y, w, d){ shade(x, y, w, d, .05); return box(x, y, w, d, 0, 2.2, 'wh', .03) + box(x, y, w, d, 2.2, 2.35, 'st', .03) + box(x + .25, y + .4, w - .5, d - .55, 2.35, 3.05, 'k2', .06); },
+    washer(x, y, w, d){ shade(x, y, w, d, .1); return box(x, y, w, d, 0, 2.3, 'wh', .12) + rtop(x + .1, y + d - .45, w - .2, .32, 2.32, 'mt', .05) + circ(x + w / 2, y + d / 2 - .15, .52, 2.32, 'gl') + circ(x + w / 2, y + d / 2 - .15, .38, 2.33, 'cer', 'tl'); },
+    lsink(x, y, w, d){ shade(x, y, w, d, .05); return box(x, y, w, d, 0, 2.2, 'cer', .06) + rtop(x + .2, y + .2, w - .4, d - .45, 2.22, 'cer', .15, 'tl') + circ(x + w / 2, y + d - .14, .09, 2.5, 'mt'); },
+    rack(x, y, w, d){ shade(x, y, w, d, .02); let s = box(x, y, w, .1, 0, 2.4, 'mt') + box(x, y + d - .1, w, .1, 0, 2.4, 'mt'); for(let i = 0; i < 4; i++) s += rtop(x + .1 + i * (w - .2) / 3 - .02, y, .04, d, 2.4, 'mt'); return s + rtop(x + .15, y + .5, w - .3, 1.1, 2.45, 'acc', .05) + rtop(x + .15, y + 2.1, w - .3, .9, 2.45, 'tx2', .05) + rtop(x + .15, y + 3.2, w - .3, .6, 2.45, 'cu', .05); },
+    basket(x, y, r){ shadeC(x, y, r); return cyl(x, y, r, 0, 1.1, 'lw') + circ(x - .12, y + .05, r * .55, 1.15, 'acc') + circ(x + .18, y - .1, r * .4, 1.18, 'tx2'); },
+  };
+
+  /* paredes, ventanas, puertas */
+  const things = [], tops = [];
+  const dist = (x0, y0, x1, y1) => Math.hypot(Math.max(x0 - cx, 0, cx - x1), Math.max(y0 - cy, 0, cy - y1));
+  const push = (bb, svg, room) => things.push({d: dist(...bb), svg, room});
+  DH.walls.forEach(([x1, y1, x2, y2, t, ops = []]) => {
+    const hz = y1 === y2, a0 = hz ? x1 : y1, a1 = hz ? x2 : y2, fix = hz ? y1 : x1, h = t / 2;
+    const rect = (s, e) => hz ? [s, fix - h, e - s, t] : [fix - h, s, t, e - s];
+    const segs = []; let cur = a0 - h;
+    [...ops].sort((p, q) => p[0] - q[0]).forEach(([s, e, kind]) => { if(s > cur) segs.push([cur, s, 'w']); segs.push([s, e, kind]); cur = e; });
+    if(a1 + h > cur) segs.push([cur, a1 + h, 'w']);
+    segs.forEach(([s, e, kind]) => {
+      if(kind === 'door') return;
+      if(kind === 'glass'){
+        const m = s + (e - s) * .55, q = s + (e - s) * .42;
+        const g1 = hz ? [s, fix - .1, m - s, .08] : [fix - .1, s, .08, m - s], g2 = hz ? [q, fix + .02, e - q, .08] : [fix + .02, q, .08, e - q];
+        push([g1[0], g1[1], g1[0] + g1[2], g1[1] + g1[3]], box(...g1, 0, 3.7, 'gl') + box(...g2, 0, 3.7, 'gl'));
+        return;
+      }
+      if(kind === 'rail'){
+        const [x, y, w, d] = rect(s, e), th = .12, rr = hz ? [x, fix - th / 2, w, th] : [fix - th / 2, y, th, d];
+        push([x, y, x + w, y + d], box(...rr, 0, 1.7, 'gl') + box(...rr, 1.7, 1.85, 'mt'));
+        return;
+      }
+      // pared sólida o ventana: en tramos cortos para que el orden de dibujo sea correcto
+      const n = Math.max(1, Math.ceil((e - s) / 2.2)), st = (e - s) / n;
+      for(let i = 0; i < n; i++){
+        const [x, y, w, d] = rect(s + i * st, s + (i + 1) * st);
+        push([x, y, x + w, y + d], sides(R(x, y, w, d), 0, WH, kind === 'win' ? 'win' : 'wall'));
+      }
+      const [x, y, w, d] = rect(s, e);
+      tops.push(rtop(x, y, w, d, WH, 'wall'));
+      if(kind === 'win') tops.push(hz ? rtop(x + .15, fix - t * .16, w - .3, t * .32, WH + .01, 'glt') : rtop(fix - t * .16, y + .15, t * .32, d - .3, WH + .01, 'glt'));
+    });
+  });
+  DH.doors.forEach(([hx, hy, ux, uy, vx, vy, len, ang]) => {
+    const a = ang * Math.PI / 180, dx = ux * Math.cos(a) + vx * Math.sin(a), dy = uy * Math.cos(a) + vy * Math.sin(a), nx = -dy * .08, ny = dx * .08;
+    const ps = [[hx + nx, hy + ny], [hx + dx * len + nx, hy + dy * len + ny], [hx + dx * len - nx, hy + dy * len - ny], [hx - nx, hy - ny]];
+    const xs = ps.map(p => p[0]), ys = ps.map(p => p[1]);
+    push([Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], prism(ps, 0, 3.6, 'door'));
+  });
+  DH.items.forEach(([room, kind, ...a]) => {
+    const fn = K[kind]; if(!fn) return;
+    tone = toneOf(room);
+    const svg = fn(...a);
+    if(!svg) return;
+    const bb = a.length >= 4 && typeof a[2] === 'number' && typeof a[3] === 'number' && kind !== 'chair' ? [a[0], a[1], a[0] + a[2], a[1] + a[3]] : [a[0] - .6, a[1] - .6, a[0] + .6, a[1] + .6];
+    if(kind === 'plant' || kind === 'rtable' || kind === 'basket') { const r = a[2]; bb.splice(0, 4, a[0] - r, a[1] - r, a[0] + r, a[1] + r); }
+    push(bb, `<g class="${tone}"${rooms[room] ? ` data-act="room" data-room="${room}"` : ''}>${svg}</g>`, room);
+  });
+  things.sort((p, q) => q.d - p.d);
+
+  /* pisos (y la sombra de afuera) */
+  const fl = DH.floors.map(([id, mat, ps]) => `<polygon class="dh-f f-${mat}" points="${pp(ps, 0)}"${rooms[id] ? ` data-act="room" data-room="${id}"` : ''}/>`).join('');
+  const lights = [...DH.lights.map(l => [...l, 4.2]), ...glows].map(([x, y, r, z]) => { const [px, py] = P(x, y, z); return `<circle cx="${r1(px)}" cy="${r1(py)}" r="${r1(r * SC)}" fill="url(#dhGlow)"/>`; }).join('');
+  // foco: oscurece todo menos el lugar elegido
+  const [ox0, oy0] = P(-.3, -.3, 0), [ox1, oy1] = P(30.3, 33.8, 0);
+  const zf = o.zoom && DH.floors.find(f => f[0] === o.zoom);
+  const [hx0, hy0] = P(-.3, -.3, WH), [hx1, hy1] = P(30.3, 33.8, WH);
+  const spot = zf ? `<path class="dh-dim" fill-rule="evenodd" d="M${r1(hx0)} ${r1(hy0)}H${r1(hx1)}V${r1(hy1)}H${r1(hx0)}Z M${pp(zf[2], WH * .5).split(' ').join(' L')}Z"/><polygon class="dh-ring ${toneOf(zf[0])}" points="${pp(zf[2], WH * .5)}"/>` : '';
+
+  /* globitos con el nombre */
+  const pins = Object.entries(DH.pins).filter(([id]) => rooms[id]).map(([id, [x, y]], i) => {
+    const r = rooms[id], cnt = (o.counts || {})[id] || 0, late = !!(o.lates || {})[id];
+    const name = r.short || r.name, [px, py] = P(x, y, 0);
+    const tw = name.length * 5.05 + 11 + 3, w = tw + 10 + (cnt ? 8 : 0), h = 15, x0 = px - w / 2, y0 = py - h / 2;
+    const sel = o.zoom === id;
+    return `<g class="dh-pin t-${r.color}${cnt ? ' busy' : ''}${late ? ' late' : ''}${sel ? ' on' : ''}" style="--i:${i}" role="button" tabindex="0" data-act="room" data-room="${id}" aria-label="${esc(r.name)}: ${cnt ? cnt + (cnt === 1 ? ' tarea pendiente' : ' tareas pendientes') + (late ? ', hay vencidas' : '') : 'al día'}">
+      <rect class="dpl" x="${r1(x0)}" y="${r1(y0)}" width="${r1(w)}" height="${h}" rx="${h / 2}"/>
+      <text class="dpe" x="${r1(x0 + 5 + 5.5)}" y="${r1(py + .5)}" text-anchor="middle" dominant-baseline="central">${esc(r.emoji)}</text>
+      <text class="dpn" x="${r1(x0 + 5 + 11 + 3)}" y="${r1(py + .6)}" dominant-baseline="central">${esc(name)}</text>
+      ${cnt ? `<circle class="dpc" cx="${r1(x0 + w - 1)}" cy="${r1(y0 + 1)}" r="6.3"/><text class="dpt" x="${r1(x0 + w - 1)}" y="${r1(y0 + 1.4)}" text-anchor="middle" dominant-baseline="central">${cnt > 9 ? '9+' : cnt}</text>` : ''}
+    </g>`;
+  }).join('');
+
+  const [vx0, vy0] = P(-.3, -.3, WH), [vx1, vy1] = P(30.3, 33.8, WH), pad = 6;
+  const vb = [vx0 - pad, vy0 - pad, vx1 - vx0 + 2 * pad, vy1 - vy0 + 2 * pad].map(r1);
+  const out = `<svg class="dh${o.zoom ? ' zoomed' : ''}" viewBox="${vb.join(' ')}" data-vb="${vb.join(' ')}" role="group" aria-label="Plano de la casa. Toca un lugar para ver sus tareas.">
+    <defs>
+      <pattern id="dhWood" patternUnits="userSpaceOnUse" width="120" height="18"><rect class="pw" width="120" height="18"/><path class="pl" d="M0 .5H120M0 9.5H120M38 0V9M98 9V18M70 0V9"/></pattern>
+      <pattern id="dhTile" patternUnits="userSpaceOnUse" width="12" height="12"><rect class="pt0" width="12" height="12"/><path class="pl2" d="M0 .25H12M.25 0V12"/></pattern>
+      <pattern id="dhStone" patternUnits="userSpaceOnUse" width="30" height="30"><rect class="ps" width="30" height="30"/><path class="pl3" d="M0 .25H30M.25 0V30"/></pattern>
+      <pattern id="dhDeck" patternUnits="userSpaceOnUse" width="60" height="7"><rect class="pd" width="60" height="7"/><path class="pl4" d="M0 .5H60M24 0V7"/></pattern>
+      <radialGradient id="dhGlow"><stop offset="0" class="g0"/><stop offset=".55" class="g1"/><stop offset="1" class="g2"/></radialGradient>
+    </defs>
+    <rect class="dh-out" x="${r1(ox0 + 4)}" y="${r1(oy0 + 7)}" width="${r1(ox1 - ox0)}" height="${r1(oy1 - oy0)}" rx="6"/>
+    <g class="dh-floors">${fl}</g>
+    <g class="dh-flat">${flatL.join('')}</g>
+    <g class="dh-shadows">${shadows.join('')}</g>
+    <g class="dh-things">${things.map(t => t.svg).join('')}</g>
+    <g class="dh-lights">${lights}</g>
+    <g class="dh-tops">${tops.join('')}</g>
+    ${spot}
+    <g class="dh-pins">${pins}</g>
+  </svg>`;
+  dhMemo = {key, svg: out};
+  return out;
+}
+
+/* ---------- Plano de muñecas: tocar un lugar → se ilumina, la cámara se acerca y salen sus tareas ---------- */
+const DHZ = {id:null, vb:null, raf:0};
+function dhRooms(){
+  const out = {};
+  (S.rooms.length ? S.rooms : DEFAULT_ROOMS).forEach(r => { out[r.id] = {name:String(r.name), short:String(r.short || ''), emoji:String(r.emoji || '📍'), color:safeColor(r.color)}; });
+  return out;
+}
+const dhHas = id => DH.floors.some(f => f[0] === id);
+function dhApplies(){
+  const ids = new Set((S.rooms.length ? S.rooms : DEFAULT_ROOMS).map(r => r.id));
+  return DH.floors.filter(f => ids.has(f[0])).length >= 6;
+}
+// Lugares que no están dibujados en el plano (p. ej. uno nuevo creado en Ajustes)
+function dhExtraChips(){
+  if(!dhApplies()) return '';
+  const {counts} = roomStats();
+  return S.rooms.filter(r => !dhHas(r.id)).map(r => { const n = counts[r.id] || 0; return `<button class="whole-chip" data-act="room" data-room="${esc(r.id)}"><span aria-hidden="true">${esc(r.emoji)}</span>${esc(r.name)}<b class="${n ? '' : 'zero'}">${n || '✓'}</b></button>`; }).join('');
+}
+const dhSvgEl = () => document.querySelector('#view svg.dh');
+const dhBase = svg => svg.dataset.vb.split(' ').map(Number);
+function dhTarget(svg, id, U = .7){
+  const base = dhBase(svg), f = DH.floors.find(x => x[0] === id);
+  if(!f) return base;
+  const pts = [...f[2].map(p => dhP(p[0], p[1], 0)), ...f[2].map(p => dhP(p[0], p[1], DH_WALL))];
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  // U = parte del plano que queda a la vista encima de la hoja con las tareas
+  const ar = base[2] / base[3], pad = 16;
+  let w = x1 - x0 + 2 * pad, h = (y1 - y0 + 2 * pad) / U;
+  if(w / h > ar) h = w / ar; else w = h * ar;
+  const minW = base[2] / 3;
+  if(w < minW){ w = minW; h = w / ar; }
+  if(w >= base[2] * .97) return base;
+  let vx = (x0 + x1) / 2 - w / 2, vy = (y0 + y1) / 2 - h * U / 2;
+  vx = Math.max(base[0], Math.min(vx, base[0] + base[2] - w));
+  vy = Math.max(base[1], Math.min(vy, base[1] + base[3] - h * U));
+  return [vx, vy, w, h];
+}
+function dhSetVB(svg, vb){
+  const base = dhBase(svg);
+  svg.setAttribute('viewBox', vb.map(v => v.toFixed(1)).join(' '));
+  svg.style.setProperty('--pz', (vb[2] / base[2]).toFixed(3));
+}
+function dhAnimate(to, done){
+  cancelAnimationFrame(DHZ.raf);
+  const svg0 = dhSvgEl();
+  if(!svg0){ DHZ.vb = to; done && done(); return; }
+  const from = DHZ.vb || dhBase(svg0);
+  if(reduceMotion()){ DHZ.vb = to; dhSetVB(svg0, to); done && done(); return; }
+  const t0 = performance.now(), ms = 520;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / ms), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+    DHZ.vb = from.map((v, i) => v + (to[i] - v) * e);
+    const svg = dhSvgEl(); if(svg) dhSetVB(svg, DHZ.vb);
+    if(k < 1) DHZ.raf = requestAnimationFrame(step); else { DHZ.raf = 0; done && done(); }
+  };
+  DHZ.raf = requestAnimationFrame(step);
+}
+// Después de pintar: el plano nuevo conserva el acercamiento actual
+function dhSync(){ const svg = dhSvgEl(); if(svg && DHZ.vb) dhSetVB(svg, DHZ.vb); }
+function dhZoomOut(){
+  if(!DHZ.id && !DHZ.vb) return;
+  const svg = dhSvgEl();
+  svg?.classList.add('unzoom');
+  const fin = () => { DHZ.id = null; DHZ.vb = null; const s = dhSvgEl(); if(s){ s.classList.remove('unzoom'); s.style.removeProperty('--pz'); } render(); };
+  if(svg && DHZ.vb) dhAnimate(dhBase(svg), fin); else fin();
+}
+function openRoom(id, fromPlan){
+  const svg = fromPlan ? dhSvgEl() : null;
+  if(!svg || !dhHas(id)){ openRoomSheet(id); return; }
+  // el plano sube hasta arriba para que se vea encima de la hoja
+  const r = svg.getBoundingClientRect(), top = Math.max(60, ($('.topbar')?.getBoundingClientRect().bottom || 60) + 4);
+  if(Math.abs(r.top - top) > 4) window.scrollTo({top: Math.max(0, scrollY + r.top - top)});
+  openRoomSheet(id);
+  DHZ.id = id;
+  doRender();
+  const s2 = dhSvgEl(); if(!s2) return;
+  const sr = s2.getBoundingClientRect(), sh = $('#sheet').offsetHeight;
+  const U = Math.max(.34, Math.min(.95, (innerHeight - sh - 12 - sr.top) / sr.height));
+  dhAnimate(dhTarget(s2, id, U));
+  try { navigator.vibrate && navigator.vibrate(8); } catch {}
+}
+function roomList(id){ S.taskRoom = id; S.taskView = 'list'; S.taskStatus = 'pending'; S.taskWho = 'all'; lsSet('casa.taskView', 'list'); if(S.tab !== 'tareas') switchTab('tareas'); else { render(); window.scrollTo({top:0}); } }
+function openRoomSheet(id){
+  const r = roomById(id);
+  S.roomSheet = id;
+  const html = roomSheetHTML(id);
+  openSheet({title: `${r.emoji} ${r.name}`, cls:'sheet-room', lite:true, body:`<div id="rsBody">${html}</div>`, onClose(){ S.roomSheet = null; dhZoomOut(); }});
+  const el = $('#rsBody'); if(el) el.dataset.html = html;
+}
+function roomSheetHTML(id){
+  const r = roomById(id), tone = safeColor(r.color);
+  const list = S.pending.filter(t => t.room === id).sort(sortPending);
+  const late = list.filter(t => dueInfo(t.due).bucket === 'late').length;
+  const wk = currentWeek();
+  const done = S.done.filter(t => t.room === id && t.doneAt && weekIdOf(t.doneAt) === wk.id).sort((a, b) => String(b.doneAt).localeCompare(String(a.doneAt)));
+  const sub = !S.pendingLoaded ? 'Revisando…' : list.length ? `${plural(list.length, 'tarea pendiente', 'tareas pendientes')}${late ? ` · <b class="rs-late">${late === 1 ? '1 vencida' : late + ' vencidas'}</b>` : ''}` : 'Todo al día aquí ✨';
+  return `<p class="sheet-p rs-sub">${sub}</p>
+    ${list.length ? `<div class="tasks rs-tasks">${list.map(taskCard).join('')}</div>` : `<div class="empty t-mint rs-empty"><span class="art">🫧</span><h3>Nada pendiente</h3><p>${done.length ? 'Lo de esta semana ya está hecho.' : 'Cuando haya algo por hacer aquí, aparece en esta lista.'}</p></div>`}
+    ${done.length ? `<div class="rs-done"><p class="label">Hechas esta semana</p>${done.slice(0, 4).map(t => { const m = memberById(t.doneBy); return `<div class="rs-d t-${safeColor(m?.color)}"><span class="ck">${ICON.check}</span><span class="tt">${esc(t.title)}</span>${m ? `<span class="who">${esc(m.name)}</span>` : ''}</div>`; }).join('')}</div>` : ''}
+    <div class="rs-actions"><button type="button" class="btn-text rs-add t-${tone}" data-act="room-add" data-room="${esc(id)}">${ICON.plus}Nueva tarea aquí</button><button type="button" class="btn-text" data-act="room-list" data-room="${esc(id)}">${ICON.list}Ver en Tareas</button></div>`;
+}
+
+/* ---------- Notificaciones (Web Push) ----------
+   Cada celular se suscribe con su navegador; Supabase guarda la suscripción y una función
+   las envía cuando asignan una tarea, cuando hay que revisar, el recordatorio del día y el ganador. */
+const VAPID_PUB = 'BHs_u-2QbDCvaDBYlnp1xy5XymyeZ0_5MotJESoMXTss97ze-uA2GjI5t351UP0OmLWHHZ_KWHzXScLuMrOI85c';
+const PUSH_KINDS = [
+  ['assigned', 'Te asignaron una tarea', 'Solo cuando te la asigna otra persona.'],
+  ['review', 'Tareas por revisar', 'Cuando alguien termina una tarea, y si no aprueban la tuya.'],
+  ['daily', 'Recordatorio del día', 'Tus tareas de hoy y las atrasadas.'],
+  ['weekly', 'Ganador de la semana', 'Al empezar la semana.'],
+];
+const PUSH_DEFAULT = {assigned:true, review:true, daily:true, weekly:true, hour:7};
+const pushCan = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && location.protocol === 'https:';
+const pushLocal = () => { try { const v = JSON.parse(lsGet('casa.push') || 'null'); return v && v.endpoint ? v : null; } catch { return null; } };
+const pushPrefs = () => ({...PUSH_DEFAULT, ...(pushLocal()?.prefs || {})});
+const b64u = s => { const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+function swReady(ms = 8000){ return Promise.race([navigator.serviceWorker.ready, new Promise((_, no) => setTimeout(() => no(new Error('sw')), ms))]); }
+async function pushSubscription(create){
+  const reg = await swReady();
+  let sub = await reg.pushManager.getSubscription();
+  if(sub){
+    // si la suscripción es de otra llave, se cambia
+    const k = sub.options && sub.options.applicationServerKey;
+    if(k && btoa(String.fromCharCode(...new Uint8Array(k))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') !== VAPID_PUB){ try { await sub.unsubscribe(); } catch {} sub = null; }
+  }
+  if(!sub && create) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUB)});
+  return sub;
+}
+async function pushSave(sub, prefs){
+  const j = sub.toJSON();
+  await rpc('casa_push_save', {p_code: CODE, p_member: S.me, p_sub: {endpoint: j.endpoint, keys: j.keys}, p_prefs: prefs, p_ua: navigator.userAgent.slice(0, 180)});
+  lsSet('casa.push', JSON.stringify({endpoint: j.endpoint, prefs, member: S.me, at: Date.now()}));
+}
+// Se llama desde un toque: en iPhone el permiso solo se puede pedir así,
+// por eso lo primero que se hace es suscribirse (eso mismo pide el permiso).
+let SWREG = null;
+if('serviceWorker' in navigator) navigator.serviceWorker.ready.then(r => { SWREG = r; }).catch(() => {});
+async function pushEnable(){
+  if(needMe()) return false;
+  if(!pushCan()){ toast(isIOS() && !isStandalone() ? 'Primero instala la app en la pantalla de inicio y ábrela desde ahí.' : 'Este celular no permite avisos desde aquí.', {tone:'sun', ms:4200}); return false; }
+  if(Notification.permission === 'denied'){ toast('Los avisos están bloqueados. Actívalos en los ajustes del celular.', {tone:'sun', ms:4600}); render(); return false; }
+  let sub = null;
+  try {
+    if(SWREG) sub = await SWREG.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUB)});
+    else if(await Notification.requestPermission() === 'granted') sub = await pushSubscription(true);
+  } catch {}
+  if(!sub && Notification.permission === 'granted'){ try { sub = await pushSubscription(true); } catch {} }
+  if(Notification.permission !== 'granted'){ toast('Sin permiso no pueden llegar avisos. Puedes activarlo en los ajustes del celular.', {tone:'sun', ms:5200}); render(); return false; }
+  try {
+    if(!sub) throw new Error('sin suscripción');
+    await pushSave(sub, pushPrefs());
+  } catch {
+    toast('No se pudieron activar los avisos. Revisa tu conexión e inténtalo otra vez.', {tone:'sun', ms:4200});
+    return false;
+  }
+  lsSet('casa.pushHide', '1');
+  toast('¡Listo! Te van a llegar los avisos de la casa.', {tone:'mint', ms:2800});
+  render(); syncBadge(true);
+  return true;
+}
+async function pushDisable(silent){
+  const loc = pushLocal();
+  try { const sub = await pushSubscription(false); if(sub) await sub.unsubscribe(); } catch {}
+  if(loc && CODE){ try { await rpc('casa_push_delete', {p_code: CODE, p_endpoint: loc.endpoint}); } catch {} }
+  lsSet('casa.push', null);
+  try { navigator.clearAppBadge && navigator.clearAppBadge(); } catch {}
+  if(!silent){ toast('Avisos apagados en este celular.', {tone:'grape', ms:2200}); render(); }
+}
+async function pushSetPref(k, v){
+  const loc = pushLocal(); if(!loc) return;
+  const prefs = {...pushPrefs(), [k]: v};
+  lsSet('casa.push', JSON.stringify({...loc, prefs}));
+  try { const sub = await pushSubscription(false); if(sub) await pushSave(sub, prefs); } catch {}
+}
+// Al abrir: mantiene la suscripción al día (cambio de perfil, llave nueva, o cada 3 días)
+async function pushRefresh(){
+  if(!pushCan() || !CODE || !S.me || Notification.permission !== 'granted') return;
+  const loc = pushLocal(); if(!loc) return;
+  try {
+    const sub = await pushSubscription(true);
+    if(!sub) return;
+    if(sub.endpoint !== loc.endpoint || loc.member !== S.me || Date.now() - (loc.at || 0) > 3 * 864e5) await pushSave(sub, pushPrefs());
+  } catch {}
+}
+async function pushTest(){
+  const loc = pushLocal(); if(!loc) return;
+  try { await rpc('casa_push_test', {p_code: CODE, p_endpoint: loc.endpoint}); toast('Enviado. Debe llegar en unos segundos.', {tone:'mint', ms:2600}); }
+  catch { toast('No se pudo enviar la prueba.', {tone:'sun'}); }
+}
+// Número en el ícono de la app: tus tareas de hoy y las atrasadas
+let badgeN = -1;
+function syncBadge(force){
+  if(!('setAppBadge' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
+  const t = ymd(today());
+  const n = S.pendingLoaded && S.me ? S.pending.filter(x => x.assignee === S.me && x.due && x.due <= t).length : 0;
+  if(n === badgeN && !force) return;
+  badgeN = n;
+  try { (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {}); } catch {}
+}
+function pushState(){
+  if(!pushCan()) return isIOS() && !isStandalone() ? 'install' : 'unsupported';
+  if(Notification.permission === 'denied') return 'denied';
+  return pushLocal() && Notification.permission === 'granted' ? 'on' : 'off';
+}
+function pushCard(){
+  if(lsGet('casa.pushHide') === '1' || !isStandalone() || !S.me) return '';
+  const st = pushState();
+  if(st !== 'off') return '';
+  return `<div class="install-card push-card"><span class="ic">${ICON.bell}</span><p><b>Activa los avisos.</b> Te avisa cuando te asignan algo, cuando hay que revisar y tus tareas del día.</p><div class="ia"><button class="btn-text" data-act="push-on">Activar</button><button class="mini" data-act="push-hide" aria-label="Ocultar">${ICON.close}</button></div></div>`;
+}
+const fmtHour = h => `${((h + 11) % 12) + 1}:00 ${h < 12 ? 'a. m.' : 'p. m.'}`;
+function pushSettingsHTML(){
+  const st = pushState();
+  if(st === 'install') return `<p class="note" style="margin:4px 0">En iPhone los avisos llegan cuando la app está instalada. Agrégala a la pantalla de inicio y ábrela desde ese ícono.</p>`;
+  if(st === 'unsupported') return `<p class="note" style="margin:4px 0">Este navegador no permite avisos. Abre la app instalada en el celular.</p>`;
+  if(st === 'denied') return `<p class="note" style="margin:4px 0">Los avisos están bloqueados para esta app. Actívalos en los ajustes del celular (Notificaciones → Casa) y vuelve aquí.</p>`;
+  if(st === 'off') return `<button type="button" class="btn-text push-btn" data-f="push-on">${ICON.bell}Activar avisos en este celular</button><p class="note" style="margin:6px 0 4px">Cada quien los activa en su celular.</p>`;
+  const p = pushPrefs();
+  return PUSH_KINDS.map(([k, label, hint]) => `<div class="look-row push-row"><span><b>${label}</b><small>${hint}</small></span><button type="button" class="tgl" role="switch" data-f="push-pref" data-k="${k}" aria-checked="${p[k] !== false}" aria-label="${label}"><i></i></button></div>${k === 'daily' && p.daily !== false ? `<div class="look-row push-row"><span>Hora del recordatorio</span><select class="input hour-in" data-f="push-hour" aria-label="Hora del recordatorio">${Array.from({length:18}, (_, i) => i + 5).map(h => `<option value="${h}"${+p.hour === h ? ' selected' : ''}>${fmtHour(h)}</option>`).join('')}</select></div>` : ''}`).join('')
+    + `<div class="push-acts"><button type="button" class="btn-text" data-f="push-test">${ICON.bell}Enviar una prueba</button><button type="button" class="btn-text" data-f="push-off">${ICON.close}Apagar avisos</button></div>`;
+}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener?.('message', e => {
+    const d = e.data || {};
+    if(d.type === 'open' && d.url){ const h = new URL(d.url, location.href).hash.slice(1); if(TAB_ORDER.includes(h) && h !== S.tab) switchTab(h); }
+  });
+}
+
 /* Plano isométrico limpio: pisos flotando con su color, un emoji y el nombre */
 /* Vista del plano: 'top' (desde arriba, como el dibujo de PC 3051) por defecto; 'iso' (3D) si la casa lo pide en sus datos */
 const planView = () => S.planView === 'iso' ? 'iso' : 'top';
 function isoHouseSVG(){
+  if(dhApplies()){ const {counts, lates} = roomStats(); return dhSVG({rooms: dhRooms(), counts, lates, zoom: DHZ.id}); }
   const view = planView(), TOP = view === 'top';
   const TU = 6, TY = .86;
   const P = TOP ? (x, y, z = 0) => [x * TU, y * TU * TY - z * TU * .9] : isoP;
@@ -1941,7 +2622,8 @@ const Inicio = {
       <h1 class="hello">Hola${me ? `, <span class="nm t-${safeColor(me.color)}">${esc(me.name)}</span>` : ''}</h1>
       <p class="hero-sub">${!S.pendingLoaded ? 'Revisando la casa…' : S.pending.length ? `${plural(S.pending.length, 'tarea pendiente', 'tareas pendientes')} en ${plural(places, 'lugar', 'lugares')}. Toca un lugar para verlas.` : 'Toda la casa está al día. ✨'}</p>`);
     setHTML($('#iHouse'), isoHouseSVG());
-    setHTML($('#iWhole'), wholeChip(false));
+    const chips = wholeChip(false) + dhExtraChips();
+    setHTML($('#iWhole'), chips ? `<div class="chip-row">${chips}</div>` : '');
 
     const sc = scoresFor(wk.id);
     const mine = sc.find(s => s.m.id === S.me) || {pts:0, count:0};
@@ -2002,6 +2684,7 @@ const Inicio = {
     if(!isStandalone() && lsGet('casa.installHide') !== '1'){
       wh += `<div class="install-card"><span class="ic">${ICON.phone}</span><p><b>Instálala en tu celular.</b> Queda con su ícono y se abre como una app normal.</p><div class="ia"><button class="btn-text" data-act="install">${installEvt ? 'Instalar' : 'Cómo'}</button><button class="mini" data-act="install-hide" aria-label="Ocultar">${ICON.close}</button></div></div>`;
     }
+    wh += pushCard();
     setHTML($('#iWinner'), wh);
 
     // Por revisar
@@ -2098,8 +2781,8 @@ const Tareas = {
 function planHTML(){
   return `<div class="house iso-plan">
     <div class="iso-wrap">${isoHouseSVG()}</div>
-    ${wholeChip(true)}
-    <p class="plan-legend">Toca un lugar para ver sus tareas. El globito dice cuántas hay, y se pone rojo si alguna está vencida.</p>
+    <div class="chip-row">${wholeChip(true)}${dhExtraChips()}</div>
+    <p class="plan-legend">Toca un lugar para acercarte y ver sus tareas. El numerito dice cuántas hay y se pone rojo si alguna está vencida.</p>
   </div>`;
 }
 
@@ -2346,7 +3029,7 @@ async function completeTask(id, btn){
     const next = addDays(from, t.repeat === 'daily' ? 1 : 7);
     nextRef = DB.collection('tasks').doc();
     const r = nextRef;
-    const ok2 = await write(() => r.set({title:t.title, room:t.room, diff:t.diff, points:pts, assignee:t.assignee || null, due:ymd(next), repeat:t.repeat, done:false, doneBy:null, doneAt:null, createdBy:t.createdBy || S.me, createdAt:now}));
+    const ok2 = await write(() => r.set({title:t.title, room:t.room, diff:t.diff, points:pts, assignee:t.assignee || null, due:ymd(next), repeat:t.repeat, done:false, doneBy:null, doneAt:null, createdBy:t.createdBy || S.me, createdAt:now, repeatOf:id}));
     if(!ok2) nextRef = null;
   }
   S.completing.delete(id);
@@ -2416,22 +3099,25 @@ async function quickChore(title){
    Hojas (bottom sheets)
    ========================================================= */
 let sheetState = null;
-function openSheet({title, body, onMount}){
+function openSheet({title, body, onMount, cls = '', lite = false, onClose}){
   const sheet = $('#sheet'), scrim = $('#scrim');
   if(sheetState) closeSheet(true);
+  sheet.className = 'sheet' + (cls ? ' ' + cls : '');
+  scrim.classList.toggle('lite', lite);
   sheet.innerHTML = `<div class="grab" aria-hidden="true"></div><div class="sheet-h"><h2 id="sheetTitle">${esc(title)}</h2><button class="iconbtn sm" data-act="sheet-close" aria-label="Cerrar">${ICON.close}</button></div><div class="sheet-b">${body}</div>`;
   sheet.onclick = null; sheet.onchange = null; sheet.oninput = null;
   sheet.hidden = false; scrim.hidden = false;
   sheet.scrollTop = 0;
   requestAnimationFrame(() => requestAnimationFrame(() => { sheet.classList.add('open'); scrim.classList.add('open'); }));
   document.body.classList.add('locked');
-  sheetState = {lastFocus: document.activeElement};
+  sheetState = {lastFocus: document.activeElement, onClose};
   syncChrome();
   onMount && onMount(sheet);
 }
 function closeSheet(instant){
   if(!sheetState) return;
   const st = sheetState; sheetState = null;
+  try { st.onClose && st.onClose(); } catch {}
   syncChrome();
   const sheet = $('#sheet'), scrim = $('#scrim');
   sheet.classList.remove('open'); scrim.classList.remove('open');
@@ -2441,12 +3127,12 @@ function closeSheet(instant){
   try { st.lastFocus && st.lastFocus.focus && st.lastFocus.focus({preventScroll:true}); } catch {}
 }
 
-function openTaskSheet(existing){
+function openTaskSheet(existing, preset){
   if(!existing && needMe()) return;
   const isEdit = !!existing;
   const d = isEdit
     ? {title:existing.title, room:existing.room, diff:DIFFS[existing.diff] ? existing.diff : 'media', assignee:existing.assignee || null, due:existing.due || null, repeat:existing.repeat || 'none'}
-    : {title:'', room:S.taskRoom || 'cocina', diff:'media', assignee:null, due:ymd(today()), repeat:'none'};
+    : {title:'', room:(preset && preset.room) || S.taskRoom || 'cocina', diff:'media', assignee:null, due:ymd(today()), repeat:'none'};
   let armed = false, busy = false;
   const opts = () => {
     const dk = dueKeyOf(d.due);
@@ -2509,7 +3195,7 @@ function openTaskSheet(existing){
         busy = true; $('#tfSubmit').disabled = true;
         const data = {title: cap(title), room:d.room, diff:d.diff, points:DIFFS[d.diff].pts, assignee:d.assignee || null, due:d.due || null, repeat:d.repeat};
         let ok;
-        if(isEdit) ok = await write(() => DB.doc('tasks/' + existing.id).update(data));
+        if(isEdit) ok = await write(() => DB.doc('tasks/' + existing.id).update({...data, editedBy:S.me || null}));
         else { const ref = DB.collection('tasks').doc(); ok = await write(() => ref.set({...data, done:false, doneBy:null, doneAt:null, createdBy:S.me, createdAt:new Date().toISOString()})); }
         busy = false;
         const sb = $('#tfSubmit'); if(sb) sb.disabled = false;
@@ -2677,6 +3363,9 @@ function openSettings(){
           <p class="note" style="margin:0">El link abre la app y entra directo a la casa. Compártelo solo con la familia.</p>
         </div>
       </div>
+      <div class="field"><span class="label">Avisos · en este celular</span>
+        <div class="look" id="stPush"></div>
+      </div>
       <div class="field"><span class="label">Apariencia · solo en este celular</span>
         <div class="look">
           ${lookRow('Tema', 'theme', [['auto', 'Auto'], ['light', 'Claro'], ['dark', 'Oscuro']])}
@@ -2695,6 +3384,11 @@ function openSettings(){
     onMount(sheet){
       paint();
       paintWeek();
+      const paintPush = () => { const el = $('#stPush'); if(el) el.innerHTML = pushSettingsHTML(); };
+      paintPush();
+      sheet.onchange = async e => {
+        if(e.target.dataset.f === 'push-hour'){ await pushSetPref('hour', +e.target.value); toast(`Listo: el recordatorio llega a las ${fmtHour(+e.target.value)}`, {tone:'mint', ms:2400}); }
+      };
       sheet.oninput = e => {
         const el = e.target, i = +el.dataset.i;
         if(el.dataset.f === 'mname') draft.members[i].name = el.value;
@@ -2730,6 +3424,10 @@ function openSettings(){
             toast('Puntos en 0 para todos. ¡Arranca la competencia!', {tone:'grape', undo: () => write(() => DB.doc('config/house').update({pointsSince: prev}))});
           }
         }
+        else if(f === 'push-on'){ b.disabled = true; await pushEnable(); paintPush(); }
+        else if(f === 'push-pref'){ const v = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', String(v)); await pushSetPref(b.dataset.k, v); if(b.dataset.k === 'daily') paintPush(); }
+        else if(f === 'push-test'){ pushTest(); }
+        else if(f === 'push-off'){ await pushDisable(); paintPush(); }
         else if(f === 'switch'){ closeSheet(); S.forcePicker = true; render(); }
         else if(f === 'share'){ shareInvite(); }
         else if(f === 'copy'){ copyText(inviteLink(), 'Link copiado. Pégalo en WhatsApp.'); }
@@ -2737,6 +3435,7 @@ function openSettings(){
         else if(f === 'leave'){
           if(!b.classList.contains('armed')){ b.classList.add('armed'); b.innerHTML = `${ICON.close}Toca otra vez para salir`; return; }
           closeSheet();
+          await pushDisable(true);
           stopRealtime();
           try { localStorage.removeItem(cacheKey()); } catch {}
           lsSet('casa.code', null); lsSet('casa.topic', null); lsSet('casa.me', null);
@@ -2848,7 +3547,11 @@ const ACTIONS = {
   tview(b){ S.taskView = b.dataset.v; lsSet('casa.taskView', S.taskView); render(); },
   tstatus(b){ S.taskStatus = b.dataset.v; if(S.taskStatus === 'done' && S.taskWho === 'none') S.taskWho = 'all'; render(); },
   twho(b){ S.taskWho = b.dataset.v; render(); },
-  room(b){ S.taskRoom = b.dataset.room; S.taskView = 'list'; S.taskStatus = 'pending'; S.taskWho = 'all'; lsSet('casa.taskView', 'list'); if(S.tab !== 'tareas') switchTab('tareas'); else { render(); window.scrollTo({top:0}); } },
+  room(b){ openRoom(b.dataset.room, !!b.closest('svg.dh')); },
+  'room-list'(b){ closeSheet(); roomList(b.dataset.room); },
+  'room-add'(b){ openTaskSheet(null, {room: b.dataset.room}); },
+  'push-on'(){ pushEnable(); },
+  'push-hide'(){ lsSet('casa.pushHide', '1'); render(); toast('Puedes activarlos después en Ajustes.', {tone:'grape', ms:2600}); },
   'room-clear'(){ S.taskRoom = null; render(); },
   'quick-chore'(b){ quickChore(b.dataset.t); },
   prize(){ openPrizeSheet(); },
@@ -2860,7 +3563,7 @@ const ACTIONS = {
   'g-clear'(){ clearCart(); },
   settings(){ if(!S.configExists || !DB) return; openSettings(); },
   profile(){ if(!S.configExists) return; S.forcePicker = true; render(); },
-  'pick-me'(b){ S.me = b.dataset.id; lsSet('casa.me', S.me); S.forcePicker = false; render(); const m = meM(); if(m) toast(`Hola, ${m.name}`, {tone:m.color, ms:1800}); },
+  'pick-me'(b){ S.me = b.dataset.id; lsSet('casa.me', S.me); S.forcePicker = false; render(); const m = meM(); if(m) toast(`Hola, ${m.name}`, {tone:m.color, ms:1800}); pushRefresh(); },
   'gate-cancel'(){ S.forcePicker = false; render(); },
   'sheet-close'(){ closeSheet(); },
   install(){ doInstall(); },
