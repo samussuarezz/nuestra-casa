@@ -830,6 +830,17 @@ body.splashing .hero.enter .dh,body.splashing .hero.enter .dh .dh-pin{animation-
 .make-n{display:flex;align-items:center;gap:9px;margin-top:18px;padding:11px 14px;border-radius:15px;background:color-mix(in oklab,var(--c-sky) 12%,var(--surface));font-size:14px;font-weight:700;color:var(--ink-2)}
 .make-n svg{width:19px;height:19px;flex:none;color:var(--c-sky)}
 .make-n b{color:var(--ink);font-weight:900}
+/* ---------- v10 ---------- */
+.avstack.sm .av{margin-left:-9px}
+.avstack.sm .av:first-child{margin-left:0}
+.avstack .more{display:grid;place-items:center;margin-left:-8px;min-width:22px;height:22px;padding:0 4px;border-radius:8px;background:var(--surface-2);box-shadow:0 0 0 2px var(--surface);font-style:normal;font-size:11px;font-weight:900;color:var(--ink-2)}
+.start-note{display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:15px;background:var(--surface-2);font-weight:800;font-size:14px;color:var(--ink-2)}
+.start-note svg{width:18px;height:18px;flex:none;color:var(--ink-3)}
+.later-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:18px;padding:12px;border-radius:16px;border:2px dashed var(--line);font-weight:800;font-size:13.5px;color:var(--ink-3)}
+.later-btn svg{width:16px;height:16px}
+.later-list .task{opacity:.75}
+.gitem.leaving{animation:gOut .4s ease forwards}
+@keyframes gOut{55%{opacity:1;transform:none}to{opacity:0;transform:translateX(28px)}}
 </style>
 </head>
 <body>
@@ -1116,7 +1127,7 @@ const S = {
   tab: initialTab(), mounted:null,
   taskStatus:'pending', taskWho:'all', taskRoom:null, taskView: lsGet('casa.taskView') === 'plan' ? 'plan' : 'list',
   superMode: lsGet('casa.super') === '1',
-  completing: new Set(), gCat:null, roomSheet:null,
+  completing: new Set(), gCat:null, roomSheet:null, pendingAll:[], later:[], showLater:false, superDone:0,
 };
 let DB = null;
 
@@ -1134,7 +1145,7 @@ function avatar(m, size = ''){
 
 /* ---------- Revisión entre todos ----------
    Cuando alguien termina una tarea, los demás la califican con una carita.
-   Los puntos cuentan cuando al menos 2 de los demás dicen "Bien hecha".
+   La primera calificación decide: 👍 da los puntos; 🤏 o 👎 la deja sin aprobar.
    Las tareas hechas antes de esta función cuentan solas. */
 const REVIEW_SINCE = '2026-10-03T16:20:00Z';
 const VOTES = {
@@ -1145,11 +1156,13 @@ const VOTES = {
 function reviewState(t){
   if(!t.doneAt || t.doneAt < REVIEW_SINCE) return {status:'ok', legacy:true, need:0, oks:0, nos:0, revs:[], others:[]};
   const others = S.members.filter(m => m.id !== t.doneBy);
-  const need = Math.min(2, others.length);
-  const revs = others.map(m => { const r = t['rv_' + m.id]; return r && VOTES[r.v] ? {m, v:r.v, c:String(r.c || '').slice(0, 200), at:r.at} : null; }).filter(Boolean);
+  const need = others.length ? 1 : 0;
+  const revs = others.map(m => { const r = t['rv_' + m.id]; return r && VOTES[r.v] ? {m, v:r.v, c:String(r.c || '').slice(0, 200), at:r.at} : null; }).filter(Boolean)
+    .sort((a, b) => String(a.at || '').localeCompare(String(b.at || '')));
   const oks = revs.filter(r => r.v === 'ok').length, nos = revs.length - oks;
-  const status = oks >= need ? 'ok' : nos > others.length - need ? 'no' : 'wait';
-  return {status, legacy:false, need, oks, nos, revs, others};
+  const first = revs[0] || null;
+  const status = !need ? 'ok' : !first ? 'wait' : first.v === 'ok' ? 'ok' : 'no';
+  return {status, legacy:false, need, oks, nos, revs, others, first};
 }
 const afterReset = t => !S.pointsSince || String(t.doneAt || '') >= S.pointsSince;
 const rvClear = t => Object.fromEntries(Object.keys(t).filter(k => k.startsWith('rv_')).map(k => [k, null]));
@@ -1474,7 +1487,7 @@ async function write(fn){
     }
     const c = err?.code;
     const msg = c === 'unavailable' ? 'Sin conexión: no se pudo guardar. Revisa el internet e intenta de nuevo.'
-      : c === 'quota_exceeded' ? 'Se llenó el espacio de la casa. Vacía el carrito o borra tareas viejas.'
+      : c === 'quota_exceeded' ? 'Se llenó el espacio de la casa. Borra tareas viejas.'
       : c === 'bad_code' ? 'El código de la casa cambió. Vuelve a entrar con el código nuevo.'
       : 'No se pudo guardar. Intenta de nuevo.';
     toast(msg, {tone:'red'});
@@ -1508,7 +1521,8 @@ function subscribe(){
   }, onSubError);
 
   DB.collection('tasks').where('done', '==', false).onSnapshot(s => {
-    S.pending = s.docs.map(d => ({id: d.id, ...d.data()}));
+    S.pendingAll = s.docs.map(d => ({id: d.id, ...d.data()}));
+    applyWeek();
     S.pendingLoaded = true;
     render();
   }, onSubError);
@@ -1704,6 +1718,7 @@ setTimeout(hideSplash, 4500);
 let raf = 0;
 function render(){ if(raf) return; raf = requestAnimationFrame(() => { raf = 0; doRender(); }); }
 function doRender(){
+  applyWeek();
   renderTop();
   renderBanner();
   renderView();
@@ -1843,8 +1858,7 @@ function taskCard(t){
   const r = roomById(t.room);
   const dk = DIFFS[t.diff] ? t.diff : 'media';
   const d = DIFFS[dk];
-  const due = dueInfo(t.due);
-  const who = t.assignee ? memberById(t.assignee) : null;
+  const due = repKind(t) === 'weekly' && t.due === ymd(addDays(currentWeek().end, -1)) ? {bucket:'week', label:'Esta semana', tone:'grape'} : dueInfo(t.due);
   const pts = Number(t.points) || d.pts;
   return `<div class="task t-${safeColor(r.color)}${S.completing.has(t.id) ? ' completing' : ''}" data-id="${esc(t.id)}">
     <button class="check" data-act="complete" data-id="${esc(t.id)}" aria-label="Marcar como hecha: ${esc(t.title)}">${ICON.check}</button>
@@ -1854,7 +1868,7 @@ function taskCard(t){
     </button>
     <span class="task-side">
       <span class="pts d-${dk}" title="${d.label}: ${pts} puntos">+${pts}<i class="bars b${d.bars}"><i></i><i></i><i></i></i></span>
-      ${who ? `<span title="Le toca a ${esc(who.name)}">${avatar(who, 'xs')}</span>` : `<span class="anyone" title="Cualquiera">${ICON.users}</span>`}
+      ${whoBadge(t)}
     </span>
   </div>`;
 }
@@ -1883,7 +1897,7 @@ function doneCard(t, canUndo){
 const sortPending = (a, b) => {
   const da = a.due || '9999', dbb = b.due || '9999';
   if(da !== dbb) return da < dbb ? -1 : 1;
-  const ma = a.assignee === S.me ? 0 : 1, mb = b.assignee === S.me ? 0 : 1;
+  const ma = isMine(a) ? 0 : 1, mb = isMine(b) ? 0 : 1;
   if(ma !== mb) return ma - mb;
   return (Number(b.points) || 0) - (Number(a.points) || 0) || String(a.createdAt || '').localeCompare(String(b.createdAt || ''));
 };
@@ -2392,8 +2406,9 @@ const PUSH_KINDS = [
   ['review', 'Tareas por revisar', 'Cuando alguien termina una tarea, y si no aprueban la tuya.'],
   ['daily', 'Recordatorio del día', 'Tus tareas de hoy y las atrasadas.'],
   ['weekly', 'Ganador de la semana', 'Al empezar la semana.'],
+  ['grocery', 'Mercado', 'Cuando alguien agrega cosas a la lista.'],
 ];
-const PUSH_DEFAULT = {assigned:true, review:true, daily:true, weekly:true, hour:7};
+const PUSH_DEFAULT = {assigned:true, review:true, daily:true, weekly:true, grocery:true, hour:7};
 const pushCan = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && location.protocol === 'https:';
 const pushLocal = () => { try { const v = JSON.parse(lsGet('casa.push') || 'null'); return v && v.endpoint ? v : null; } catch { return null; } };
 const pushPrefs = () => ({...PUSH_DEFAULT, ...(pushLocal()?.prefs || {})});
@@ -2476,7 +2491,7 @@ let badgeN = -1;
 function syncBadge(force){
   if(!('setAppBadge' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
   const t = ymd(today());
-  const n = S.pendingLoaded && S.me ? S.pending.filter(x => x.assignee === S.me && x.due && x.due <= t).length : 0;
+  const n = S.pendingLoaded && S.me ? S.pending.filter(x => isMine(x) && x.due && x.due <= t).length : 0;
   if(n === badgeN && !force) return;
   badgeN = n;
   try { (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {}); } catch {}
@@ -2490,7 +2505,7 @@ function pushCard(){
   if(lsGet('casa.pushHide') === '1' || !isStandalone() || !S.me) return '';
   const st = pushState();
   if(st !== 'off') return '';
-  return `<div class="install-card push-card"><span class="ic">${ICON.bell}</span><p><b>Activa los avisos.</b> Te avisa cuando te asignan algo, cuando hay que revisar y tus tareas del día.</p><div class="ia"><button class="btn-text" data-act="push-on">Activar</button><button class="mini" data-act="push-hide" aria-label="Ocultar">${ICON.close}</button></div></div>`;
+  return `<div class="install-card push-card"><span class="ic">${ICON.bell}</span><p><b>Activa los avisos.</b> Te avisa cuando te asignan algo, cuando hay que revisar, tus tareas del día y lo que agregan al mercado.</p><div class="ia"><button class="btn-text" data-act="push-on">Activar</button><button class="mini" data-act="push-hide" aria-label="Ocultar">${ICON.close}</button></div></div>`;
 }
 const fmtHour = h => `${((h + 11) % 12) + 1}:00 ${h < 12 ? 'a. m.' : 'p. m.'}`;
 function pushSettingsHTML(){
@@ -2702,7 +2717,7 @@ const Inicio = {
     // Por revisar
     const rv = toReview();
     setHTML($('#iReview'), rv.length ? `<div class="sec-h"><h2>Por revisar</h2><span class="count">${rv.length}</span></div>
-      <p class="sec-p">Califica lo que hicieron los demás. Los puntos cuentan cuando 2 dicen que quedó bien.</p>
+      <p class="sec-p">Califica lo que hicieron los demás. La primera calificación decide: con 👍 se suman los puntos.</p>
       <div class="tasks">${rv.slice(0, 4).map(reviewCard).join('')}</div>${rv.length > 4 ? `<p class="note" style="text-align:center">y ${rv.length - 4} más en Tareas → Hechas</p>` : ''}` : '');
 
     // Para hoy
@@ -2767,15 +2782,20 @@ const Tareas = {
     }
 
     let list = S.pending;
-    if(S.taskWho === 'none') list = list.filter(t => !t.assignee);
-    else if(S.taskWho !== 'all') list = list.filter(t => t.assignee === S.taskWho);
+    const whoOk = t => S.taskWho === 'all' || (S.taskWho === 'none' ? !whoIds(t).length : whoIds(t).includes(S.taskWho));
+    list = list.filter(whoOk);
     if(S.taskRoom) list = list.filter(t => t.room === S.taskRoom);
     list = [...list].sort(sortPending);
+    // las de próximas semanas no se muestran (salen cuando llegue su semana); se pueden ver con un toque
+    const later = S.later.filter(t => whoOk(t) && (!S.taskRoom || t.room === S.taskRoom)).sort(sortPending);
+    const laterHTML = !later.length ? '' : S.showLater
+      ? `<div class="group-h t-gray"><span class="dot"></span>Próximas semanas<span class="n">${later.length}</span></div><div class="tasks later-list">${later.map(taskCard).join('')}</div><button class="later-btn" data-act="later">Ocultar las de próximas semanas</button>`
+      : `<button class="later-btn" data-act="later">${ICON.cal}${plural(later.length, 'tarea programada', 'tareas programadas')} para próximas semanas · Ver</button>`;
     if(!list.length){
       const any = S.pending.length > 0;
       const chores = CHORES.filter(c => !S.pending.some(t => norm(t.title) === norm(c.t))).slice(0, 6);
       body.innerHTML = `<div class="empty t-mint" style="margin-top:18px"><span class="art">✨</span><h3>${any ? 'Nada con este filtro' : 'La casa está al día'}</h3><p>${any ? 'Prueba con otro filtro o crea una tarea nueva.' : 'Agrega las tareas de la casa. Toca una sugerencia para crearla rápido:'}</p>
-        ${any ? '' : `<div class="wrapopts">${chores.map(c => `<button class="pill" data-act="quick-chore" data-t="${esc(c.t)}">${esc(roomById(choreRoom(c)).emoji)} ${esc(c.t)}</button>`).join('')}</div>`}</div>`;
+        ${any ? '' : `<div class="wrapopts">${chores.map(c => `<button class="pill" data-act="quick-chore" data-t="${esc(c.t)}">${esc(roomById(choreRoom(c)).emoji)} ${esc(c.t)}</button>`).join('')}</div>`}</div>` + laterHTML;
       return;
     }
     const groups = [
@@ -2786,7 +2806,7 @@ const Tareas = {
       const items = list.filter(t => dueInfo(t.due).bucket === b);
       if(!items.length) return '';
       return `<div class="group-h t-${tone}"><span class="dot"></span>${label}<span class="n">${items.length}</span></div><div class="tasks">${items.map(taskCard).join('')}</div>`;
-    }).join('');
+    }).join('') + laterHTML;
   },
 };
 
@@ -2807,16 +2827,15 @@ function reviewCard(t){
       <span class="pts pend">+${Number(t.points) || 0}</span>
     </button>
     <div class="votes">${Object.entries(VOTES).map(([v, o]) => `<button class="vote t-${o.tone}" data-act="vote" data-id="${esc(t.id)}" data-v="${v}"><span class="ve" aria-hidden="true">${o.emo}</span>${o.label}</button>`).join('')}</div>
-    ${st.oks ? `<p class="rv-note">Ya lleva ${st.oks} de ${st.need} 👍</p>` : ''}
   </div>`;
 }
 
 function reviewStatusHTML(t, st){
   const by = memberById(t.doneBy), pts = Number(t.points) || 0;
   if(st.legacy) return `<p class="rv-state t-mint">Se hizo antes de que existieran las revisiones, así que cuenta sola.</p>`;
-  if(st.status === 'ok') return `<p class="rv-state t-mint">✓ Aprobada. Los ${pts} pts ya cuentan para ${esc(by?.name || 'quien la hizo')}.</p>`;
-  if(st.status === 'no') return `<p class="rv-state t-red">✗ No fue aprobada y no suma puntos. ${esc(by?.name || 'Quien la hizo')} la puede volver a hacer.</p>`;
-  return `<p class="rv-state t-sun">En revisión: lleva ${st.oks} de ${st.need} 👍. Los ${pts} pts cuentan al llegar a ${st.need}.</p>`;
+  if(st.status === 'ok') return `<p class="rv-state t-mint">✓ Aprobada${st.first ? ' por ' + esc(st.first.m.name) : ''}. Los ${pts} pts ya cuentan para ${esc(by?.name || 'quien la hizo')}.</p>`;
+  if(st.status === 'no') return `<p class="rv-state t-red">✗ ${st.first ? esc(st.first.m.name) + ' dijo que ' + (st.first.v === 'bad' ? 'quedó mal hecha' : 'le faltó algo') : 'No fue aprobada'} y no suma puntos. ${esc(by?.name || 'Quien la hizo')} la puede volver a hacer.</p>`;
+  return `<p class="rv-state t-sun">En revisión: los ${pts} pts cuentan cuando alguien la califique con 👍.</p>`;
 }
 
 function openReviewSheet(id, preset){
@@ -2826,7 +2845,7 @@ function openReviewSheet(id, preset){
   const r = roomById(t.room), by = memberById(t.doneBy);
   const st = reviewState(t);
   const mine = t['rv_' + S.me];
-  const canVote = !st.legacy && S.me !== t.doneBy && memberById(S.me);
+  const canVote = !st.legacy && S.me !== t.doneBy && memberById(S.me) && (st.status === 'wait' || !!mine);
   let v = preset || mine?.v || null;
   const voteBtns = () => Object.entries(VOTES).map(([k, o]) => `<button type="button" class="vote big t-${o.tone}" data-f="v" data-v="${k}" aria-pressed="${v === k}"><span class="ve" aria-hidden="true">${o.emo}</span>${o.label}</button>`).join('');
   openSheet({
@@ -2860,7 +2879,7 @@ function openReviewSheet(id, preset){
         }
         if(b.dataset.f === 'redo'){
           const ok = await write(() => DB.doc('tasks/' + t.id).update({done:false, doneBy:null, doneAt:null, ...rvClear(t)}));
-          if(ok){ closeSheet(); toast(`«${t.title}» volvió a pendientes. ¡Tú puedes!`, {tone:'sun', ms:3000}); }
+          if(ok){ await dropNext(t.id); closeSheet(); toast(`«${t.title}» volvió a pendientes. ¡Tú puedes!`, {tone:'sun', ms:3000}); }
         }
       };
     },
@@ -2918,7 +2937,7 @@ const Ranking = {
       </div>
       <div class="sec-h"><h2>Cómo se ganan puntos</h2></div>
       <div class="rules">${Object.entries(DIFFS).map(([k, d]) => `<div class="rule d-${k}"><b>+${d.pts}</b><span>${d.label}</span></div>`).join('')}</div>
-      <p class="note">Los puntos de una tarea cuentan cuando al menos 2 de los demás la califican con 👍 Bien hecha. La semana va de ${weekStartName()} a ${weekEndName()}. Quien tenga más puntos el ${weekEndName()} a la medianoche gana el premio para la semana siguiente. Si hay empate, ganan los dos.</p>
+      <p class="note">Los puntos de una tarea cuentan cuando alguien más la califica con 👍 Bien hecha (la primera calificación decide). La semana va de ${weekStartName()} a ${weekEndName()}. Quien tenga más puntos el ${weekEndName()} a la medianoche gana el premio para la semana siguiente. Si hay empate, ganan los dos.</p>
       ${hist.length ? `<div class="sec-h"><h2>Salón de la fama</h2></div><div class="hof">${hist.map(h => `<div class="hof-row t-${safeColor(h.win[0].m.color)}">${avatar(h.win[0].m, 'sm')}<span class="grow"><span class="wk">${weekRange(h.w)}</span><br><b>${esc(joinNames(h.win.map(x => x.m.name)))}</b>${h.prize ? `<span class="hp"> · ${esc(h.prize)}</span>` : ''}</span><span class="rp">${h.win[0].pts} pts</span></div>`).join('')}</div>` : ''}
     `;
   },
@@ -2952,12 +2971,12 @@ const Mercado = {
     const sec = $('#mSec');
     sec.classList.toggle('is-super', S.superMode);
     $('#superBtn').setAttribute('aria-pressed', String(S.superMode));
-    const items = toBuy(), cart = S.groceries.filter(g => g.bought);
+    const items = toBuy();
     const top = $('#gTop'), body = $('#gBody');
 
     if(S.superMode){
-      const total = items.length + cart.length;
-      top.innerHTML = `<div class="super-bar"><div class="row"><span>En el carrito</span><b>${cart.length} de ${total}</b></div><div class="progress"><i style="width:${total ? Math.round(cart.length / total * 100) : 0}%"></i></div></div>`;
+      const done = S.superDone || 0, total = items.length + done;
+      top.innerHTML = `<div class="super-bar"><div class="row"><span>Faltan por comprar</span><b>${items.length}</b></div><div class="progress"><i style="width:${total ? Math.round(done / total * 100) : 0}%"></i></div><p class="note" style="margin-top:8px">Toca cada producto cuando lo eches al carrito y se quita de la lista.</p></div>`;
     } else {
       const onList = new Set(items.map(g => norm(g.name)));
       const recent = S.catalog.map(c => c.name).filter(Boolean);
@@ -2967,16 +2986,12 @@ const Mercado = {
     }
 
     if(!S.gLoaded){ body.innerHTML = `<div style="margin-top:18px;display:grid;gap:10px">${skeleton(3, 58)}</div>`; return; }
-    if(!items.length && !cart.length){
+    if(!items.length){
       body.innerHTML = `<div class="empty t-mint" style="margin-top:18px"><span class="art">🧺</span><h3>La lista está vacía</h3><p>Cuando algo se acabe, escríbelo arriba. Todos en casa lo ven al instante.</p></div>`;
       return;
     }
     const groups = CATS.map(c => ({c, list: items.filter(g => (CAT_BY_ID[g.cat] ? g.cat : 'otros') === c.id).sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))})).filter(g => g.list.length);
     let html = groups.map(({c, list}) => `<div class="gcat t-${c.color}"><div class="gcat-h"><span class="ic" aria-hidden="true">${c.emoji}</span><h3>${esc(c.name)}</h3><span class="n">${list.length}</span></div><div class="glist">${list.map(groceryRow).join('')}</div></div>`).join('');
-    if(!items.length) html = `<div class="empty t-mint" style="margin-top:18px"><span class="art">🎉</span><h3>¡Todo en el carrito!</h3><p>Cuando terminen de guardar el mercado, vacía el carrito.</p></div>`;
-    if(cart.length){
-      html += `<div class="gcat cart t-gray"><div class="gcat-h"><span class="ic" aria-hidden="true">🛒</span><h3>En el carrito · ${cart.length}</h3><button class="btn-text act" data-act="g-clear">${ICON.trash}Vaciar</button></div><div class="glist">${cart.sort((a, b) => String(b.boughtAt).localeCompare(String(a.boughtAt))).map(groceryRow).join('')}</div></div>`;
-    }
     body.innerHTML = html;
   },
 };
@@ -2985,7 +3000,7 @@ function groceryRow(g){
   const c = CAT_BY_ID[g.cat] || CAT_BY_ID.otros;
   const by = memberById(g.addedBy);
   return `<div class="gitem t-${c.color} ${g.bought ? 'bought' : ''}">
-    <button class="gbox" data-act="g-toggle" data-id="${esc(g.id)}" aria-pressed="${!!g.bought}" aria-label="${g.bought ? 'Sacar del carrito' : 'Poner en el carrito'}: ${esc(g.name)}"><span class="sq">${ICON.check}</span></button>
+    <button class="gbox" data-act="g-toggle" data-id="${esc(g.id)}" aria-label="Ya lo compré: ${esc(g.name)}"><span class="sq">${ICON.check}</span></button>
     <button class="gname" data-act="g-edit" data-id="${esc(g.id)}" aria-label="Editar ${esc(g.name)}">${esc(g.name)}${g.qty ? `<span class="qty">${esc(qtyLabel(g.qty))}</span>` : ''}</button>
     ${by ? `<span title="Lo pidió ${esc(by.name)}">${avatar(by, 'xxs')}</span>` : ''}
   </div>`;
@@ -3041,15 +3056,15 @@ async function completeTask(id, btn){
     const next = nextDue(t, from);
     nextRef = DB.collection('tasks').doc();
     const r = nextRef;
-    const ok2 = await write(() => r.set({title:t.title, room:t.room, diff:t.diff, points:pts, assignee:t.assignee || null, due:ymd(next), repeat:t.repeat, days:repeatDays(t), done:false, doneBy:null, doneAt:null, createdBy:t.createdBy || S.me, createdAt:now, repeatOf:id}));
+    const ok2 = await write(() => r.set({title:t.title, room:t.room, diff:t.diff, points:pts, ...whoFields(whoIds(t)), due:ymd(next), repeat:t.repeat, days:repeatDays(t), done:false, doneBy:null, doneAt:null, createdBy:t.createdBy || S.me, createdAt:now, repeatOf:id}));
     if(!ok2) nextRef = null;
   }
   S.completing.delete(id);
   if(!ok){ const it = $('#iToday'); if(it) delete it.dataset.html; }
   render();
   if(!ok) return;
-  const need = Math.min(2, S.members.filter(m => m.id !== S.me).length);
-  toast(need ? `¡Hecha! Los +${pts} pts cuentan cuando ${need === 1 ? 'alguien más la apruebe' : '2 de los demás la aprueben'}.` : `+${pts} pts para ${me.name}.`, {tone: me.color, undo: async () => {
+  const need = Math.min(1, S.members.filter(m => m.id !== S.me).length);
+  toast(need ? `¡Hecha! Los +${pts} pts cuentan cuando alguien más la apruebe.` : `+${pts} pts para ${me.name}.`, {tone: me.color, undo: async () => {
     await write(() => DB.doc('tasks/' + id).update({done:false, doneBy:null, doneAt:null}));
     if(nextRef){ const r = nextRef; await write(() => r.delete()); }
   }});
@@ -3061,7 +3076,9 @@ async function reopenTask(id){
   const prev = {done:true, doneBy:t.doneBy, doneAt:t.doneAt};
   Object.keys(t).filter(k => k.startsWith('rv_')).forEach(k => prev[k] = t[k]);
   const ok = await write(() => DB.doc('tasks/' + id).update({done:false, doneBy:null, doneAt:null, ...rvClear(t)}));
-  if(ok) toast(`"${t.title}" volvió a pendientes`, {tone:'sun', undo: () => write(() => DB.doc('tasks/' + id).update(prev))});
+  if(!ok) return;
+  const kids = await dropNext(id);
+  toast(`"${t.title}" volvió a pendientes`, {tone:'sun', undo: async () => { await write(() => DB.doc('tasks/' + id).update(prev)); for(const k of kids) await write(() => DB.doc('tasks/' + k.id).set(k.data)); }});
 }
 
 async function addGrocery(raw, catOverride, qtyOverride){
@@ -3083,12 +3100,24 @@ async function addGrocery(raw, catOverride, qtyOverride){
   return ok;
 }
 
-async function toggleGrocery(id){
+async function toggleGrocery(id, btn){
   const g = S.groceries.find(x => x.id === id);
   if(!g) return;
   if(needMe()) return;
-  const nb = !g.bought;
-  await write(() => DB.doc('groceries/' + id).update(nb ? {bought:true, boughtBy:S.me, boughtAt:new Date().toISOString()} : {bought:false, boughtBy:null, boughtAt:null}));
+  const row = btn && btn.closest('.gitem');
+  row?.classList.add('bought', 'leaving');
+  try { navigator.vibrate && navigator.vibrate(12); } catch {}
+  await sleep(reduceMotion() ? 0 : 380);
+  const {id: _gid, ...backup} = g;
+  const ok = await write(() => DB.doc('groceries/' + id).delete());
+  if(!ok){ row?.classList.remove('bought', 'leaving'); return; }
+  if(S.superMode) S.superDone++;
+  render();
+  toast(`${g.name} ✓ comprado`, {tone:(CAT_BY_ID[g.cat] || CAT_BY_ID.otros).color, undo: async () => {
+    await write(() => DB.doc('groceries/' + id).set({...backup, bought:false, boughtBy:null, boughtAt:null}));
+    if(S.superMode && S.superDone) S.superDone--;
+    render();
+  }});
 }
 
 async function clearCart(){
@@ -3146,14 +3175,15 @@ const REPEATS = {
   alt:    {label:'Día de por medio', chip:'Día de por medio', step:2},
   '2w':   {label:'2 veces por semana', n:2, def:[1, 4]},
   '3w':   {label:'3 veces por semana', n:3, def:[1, 3, 5]},
-  weekly: {label:'Cada semana', chip:'Semanal', step:7},
+  weekly: {label:'Cada semana', chip:'Semanal'},
 };
 const DAY_SHORT = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const monFirst = (a, b) => ((a + 6) % 7) - ((b + 6) % 7);
 const repKind = t => REPEATS[t && t.repeat] && t.repeat !== 'none' ? t.repeat : null;
 function repeatDays(t){
   const R = REPEATS[t && t.repeat]; if(!R || !R.n) return null;
   const ds = Array.isArray(t.days) ? [...new Set(t.days.map(Number).filter(n => Number.isInteger(n) && n >= 0 && n <= 6))] : [];
-  return (ds.length === R.n ? ds : R.def).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+  return (ds.length === R.n ? ds : R.def).slice().sort(monFirst);
 }
 function repeatChip(t){
   const k = repKind(t); if(!k) return '';
@@ -3161,50 +3191,117 @@ function repeatChip(t){
   const txt = ds ? cap(ds.map(d => DAY_SHORT[d]).join(', ').replace(/, ([^,]+)$/, ' y $1')) : R.chip;
   return `<span class="chip ghost">${ICON.repeat}${esc(txt)}</span>`;
 }
+const weekEndOf = d => addDays(weekStart(d), 6);
+const firstDayFrom = (from, ds) => { for(let i = 0; i < 7; i++){ const x = addDays(from, i); if(ds.includes(x.getDay())) return x; } return from; };
 // Siguiente fecha de una tarea repetida, contando desde `from`
 function nextDue(t, from){
   const k = repKind(t); if(!k) return null;
   const R = REPEATS[k];
+  if(k === 'weekly') return addDays(weekStart(from), 13);            // la de la otra semana (se ve cuando empiece)
   if(R.step) return addDays(from, R.step);
+  return firstDayFrom(addDays(from, 1), repeatDays(t));
+}
+/* Semana a semana: las repetidas nunca quedan vencidas de una semana anterior.
+   Cada día / día de por medio pasan a hoy; las semanales van hasta el último día de la semana;
+   las de 2 o 3 veces por semana pasan al día que les toca. (El servidor hace lo mismo cada hora.) */
+function effDue(t){
+  const k = repKind(t), due = t.due || null;
+  if(!k) return due;
+  const td = today(), tdY = ymd(td), ws = weekStart(td), wsY = ymd(ws);
+  if(k === 'daily' || k === 'alt') return !due || due < tdY ? tdY : due;
+  if(k === 'weekly') return !due || due < wsY ? ymd(addDays(ws, 6)) : ymd(weekEndOf(parseYmd(due)));
   const ds = repeatDays(t);
-  for(let i = 1; i <= 7; i++){ const x = addDays(from, i); if(ds.includes(x.getDay())) return x; }
-  return addDays(from, 7);
+  if(!due || due < wsY) return ymd(firstDayFrom(td, ds));
+  if(due < tdY){
+    let best = null;
+    for(let x = addDays(parseYmd(due), 1); x <= td; x = addDays(x, 1)) if(ds.includes(x.getDay())) best = x;
+    return best ? ymd(best) : due;
+  }
+  return due;
+}
+// Solo se ven las tareas de esta semana; las de semanas siguientes aparecen cuando les llegue la semana
+function applyWeek(){
+  const end = ymd(addDays(currentWeek().end, -1));
+  // si quedó una copia doble (la siguiente de una que se volvió a abrir), se muestra solo una
+  const open = new Set(S.pendingAll.map(t => t.id));
+  const all = S.pendingAll.filter(t => !(t.repeatOf && open.has(t.repeatOf))).map(t => { const due = effDue(t); return due === (t.due || null) ? t : {...t, due}; });
+  S.pending = all.filter(t => !t.due || t.due <= end);
+  S.later = all.filter(t => t.due && t.due > end);
+}
+/* A quién le toca: una persona (assignee) o varias (assignees). Si son varias, la tarea es una sola:
+   la hace el primero que pueda y los puntos son para quien la haga. Sin nadie = Cualquiera. */
+const whoIds = t => Array.isArray(t.assignees) && t.assignees.length ? t.assignees.map(String) : t.assignee ? [String(t.assignee)] : [];
+const isMine = t => !!S.me && whoIds(t).includes(S.me);
+const whoFields = ids => ids.length > 1 ? {assignee:null, assignees:[...ids]} : {assignee:ids[0] || null, assignees:null};
+function whoBadge(t){
+  const ids = whoIds(t), ms = ids.map(memberById).filter(Boolean);
+  if(!ms.length) return `<span class="anyone" title="Cualquiera">${ICON.users}</span>`;
+  if(ms.length === 1) return `<span title="Le toca a ${esc(ms[0].name)}">${avatar(ms[0], 'xs')}</span>`;
+  const all = S.members.length > 1 && S.members.every(m => ids.includes(m.id));
+  return `<span class="avstack sm" title="${all ? 'Todos: la hace el primero que pueda' : 'Les toca a ' + esc(joinNames(ms.map(m => m.name))) + ': la hace el primero'}">${ms.slice(0, 3).map(m => avatar(m, 'xxs')).join('')}${ms.length > 3 ? `<i class="more">+${ms.length - 3}</i>` : ''}</span>`;
+}
+// Al reabrir una tarea repetida se quita la siguiente que ya se había creado (para que no quede doble)
+async function dropNext(id){
+  const kids = S.pendingAll.filter(x => x.repeatOf === id);
+  const backup = kids.map(k => { const {id: kid, ...data} = k; return {id: kid, data}; });
+  for(const k of kids) await write(() => DB.doc('tasks/' + k.id).delete());
+  return backup;
 }
 
 /* Nueva tarea / Editar tarea.
-   Al crear se pueden elegir varios lugares y varias personas (o Todos): se crea una tarea
-   por cada lugar y por cada persona, y cada quien gana sus puntos. Al editar es una sola tarea. */
+   Al crear se pueden elegir varios lugares (una tarea por lugar). Si se eligen varias personas
+   (o Todos) la tarea es compartida: la hace el primero que pueda y solo él gana los puntos. */
 function openTaskSheet(existing, preset){
   if(!existing && needMe()) return;
   const isEdit = !!existing;
   const firstRoom = (preset && preset.room) || S.taskRoom || 'cocina';
   const d = isEdit
-    ? {title:existing.title, rooms:[existing.room], diff:DIFFS[existing.diff] ? existing.diff : 'media', who:existing.assignee ? [existing.assignee] : [], due:existing.due || null, repeat:repKind(existing) || 'none', days:repeatDays(existing)}
+    ? {title:existing.title, rooms:[existing.room], diff:DIFFS[existing.diff] ? existing.diff : 'media', who:whoIds(existing).filter(id => memberById(id)), due:existing.due || null, repeat:repKind(existing) || 'none', days:repeatDays(existing)}
     : {title:'', rooms:[firstRoom], diff:'media', who:[], due:ymd(today()), repeat:'none', days:null};
   let armed = false, busy = false;
   const ids = () => S.members.map(m => m.id);
   const allPicked = () => S.members.length > 1 && ids().every(id => d.who.includes(id));
-  const count = () => d.rooms.length * Math.max(1, d.who.length);
+  const count = () => d.rooms.length;
+  // fecha con la que queda guardada según cómo se repite
+  const startDue = () => {
+    const k = d.repeat, td = today();
+    if(k === 'weekly') return ymd(weekEndOf(td));
+    if(k === '2w' || k === '3w') return ymd(firstDayFrom(td, [...d.days]));
+    if(k === 'daily' || k === 'alt') return d.due && d.due > ymd(td) ? d.due : ymd(td);
+    return d.due || null;
+  };
+  const startLabel = () => {
+    const k = d.repeat, sd = startDue(), tdY = ymd(today());
+    if(k === 'weekly') return 'Esta semana. Cada semana sale de nuevo.';
+    const day = sd === tdY ? 'hoy' : sd === ymd(addDays(today(), 1)) ? 'mañana' : `el ${DAY_NAMES[parseYmd(sd).getDay()]}`;
+    return sd > ymd(addDays(currentWeek().end, -1)) ? `Empieza ${day}. Aparece cuando empiece esa semana.` : `Empieza ${day}.`;
+  };
   const opts = () => {
-    const dk = dueKeyOf(d.due), R = REPEATS[d.repeat];
-    const lh = t => isEdit ? '' : `<span class="lh">${t}</span>`;
+    const dk = dueKeyOf(d.due), R = REPEATS[d.repeat], k = d.repeat;
+    const lh = t => `<span class="lh">${t}</span>`;
     const n = count();
+    const dueField = k === 'none'
+      ? `<div class="opts">
+        ${[['today', 'Hoy'], ['tomorrow', 'Mañana'], ['week', 'Esta semana'], ['none', 'Sin fecha']].map(([kk, l]) => `<button type="button" class="opt" data-f="due" data-v="${kk}" aria-pressed="${dk === kk}">${l}</button>`).join('')}
+        <label class="opt date-opt" data-on="${dk === 'custom'}">${ICON.cal}<span>${dk === 'custom' ? esc(short(parseYmd(d.due))) : 'Otra fecha'}</span><input type="date" id="tfDate" value="${esc(d.due || '')}" aria-label="Elegir otra fecha"></label>
+      </div>`
+      : (k === 'daily' || k === 'alt')
+        ? `<div class="opts">${[['today', 'Hoy'], ['tomorrow', 'Mañana']].map(([kk, l]) => `<button type="button" class="opt" data-f="due" data-v="${kk}" aria-pressed="${(dk === 'tomorrow' ? 'tomorrow' : 'today') === kk}">${l}</button>`).join('')}</div>`
+        : `<p class="start-note">${ICON.cal}${startLabel()}</p>`;
     return `
-    <div class="field"><span class="label">¿Dónde?${lh('Puedes elegir varios')}</span><div class="opts">${allRooms().map(r => `<button type="button" class="opt t-${safeColor(r.color)}" data-f="room" data-v="${esc(r.id)}" aria-pressed="${d.rooms.includes(r.id)}"><span class="oe">${esc(r.emoji)}</span>${esc(r.name)}</button>`).join('')}</div></div>
-    <div class="field"><span class="label">Dificultad</span><div class="diffs">${Object.entries(DIFFS).map(([k, x]) => `<button type="button" class="diff d-${k}" data-f="diff" data-v="${k}" aria-pressed="${d.diff === k}"><b>+${x.pts}</b><span>${x.label}</span></button>`).join('')}</div></div>
+    <div class="field"><span class="label">¿Dónde?${isEdit ? '' : lh('Puedes elegir varios')}</span><div class="opts">${allRooms().map(r => `<button type="button" class="opt t-${safeColor(r.color)}" data-f="room" data-v="${esc(r.id)}" aria-pressed="${d.rooms.includes(r.id)}"><span class="oe">${esc(r.emoji)}</span>${esc(r.name)}</button>`).join('')}</div></div>
+    <div class="field"><span class="label">Dificultad</span><div class="diffs">${Object.entries(DIFFS).map(([kk, x]) => `<button type="button" class="diff d-${kk}" data-f="diff" data-v="${kk}" aria-pressed="${d.diff === kk}"><b>+${x.pts}</b><span>${x.label}</span></button>`).join('')}</div></div>
     <div class="field"><span class="label">¿A quién le toca?${lh('Puedes elegir varios')}</span><div class="opts">
       <button type="button" class="opt" data-f="who" data-v="" aria-pressed="${!d.who.length}">${ICON.users}Cualquiera</button>
-      ${!isEdit && S.members.length > 1 ? `<button type="button" class="opt" data-f="who-all" aria-pressed="${allPicked()}"><span class="avstack">${S.members.slice(0, 4).map(m => avatar(m, 'xxs')).join('')}</span>Todos</button>` : ''}
+      ${S.members.length > 1 ? `<button type="button" class="opt" data-f="who-all" aria-pressed="${allPicked()}"><span class="avstack">${S.members.slice(0, 4).map(m => avatar(m, 'xxs')).join('')}</span>Todos</button>` : ''}
       ${S.members.map(m => `<button type="button" class="opt t-${safeColor(m.color)}" data-f="who" data-v="${esc(m.id)}" aria-pressed="${d.who.includes(m.id)}">${avatar(m, 'xxs')}${esc(m.name)}</button>`).join('')}
-    </div></div>
-    <div class="field"><span class="label">¿Para cuándo?</span><div class="opts">
-      ${[['today', 'Hoy'], ['tomorrow', 'Mañana'], ['week', 'Esta semana'], ['none', 'Sin fecha']].map(([k, l]) => `<button type="button" class="opt" data-f="due" data-v="${k}" aria-pressed="${dk === k}">${l}</button>`).join('')}
-      <label class="opt date-opt" data-on="${dk === 'custom'}">${ICON.cal}<span>${dk === 'custom' ? esc(short(parseYmd(d.due))) : 'Otra fecha'}</span><input type="date" id="tfDate" value="${esc(d.due || '')}" aria-label="Elegir otra fecha"></label>
-    </div></div>
-    <div class="field"><span class="label">Repetir</span><div class="opts">${Object.entries(REPEATS).map(([k, x]) => `<button type="button" class="opt" data-f="repeat" data-v="${k}" aria-pressed="${d.repeat === k}">${k !== 'none' ? ICON.repeat : ''}${x.label}</button>`).join('')}</div>
-      ${R && R.n ? `<div class="rep-days"><div class="days" role="group" aria-label="Días en que se repite">${[1, 2, 3, 4, 5, 6, 0].map(x => `<button type="button" data-f="rday" data-v="${x}" aria-pressed="${d.days.includes(x)}" aria-label="${cap(DAY_NAMES[x])}">${['D', 'L', 'M', 'M', 'J', 'V', 'S'][x]}</button>`).join('')}</div></div><p class="note" style="margin:2px 2px 0">Cuando la marquen como hecha, vuelve a aparecer el siguiente ${[...d.days].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(x => DAY_NAMES[x]).join(' o ')}. Toca otro día para cambiarlo.</p>` : ''}
     </div>
-    ${n > 1 ? `<p class="make-n">${ICON.tasks}<span>Se van a crear <b>${n} tareas</b>: ${d.rooms.length > 1 ? `una en cada lugar${d.who.length > 1 ? ' y ' : ''}` : ''}${d.who.length > 1 ? 'una para cada persona' : ''}.</span></p>` : ''}`;
+    ${d.who.length !== 1 ? `<p class="note" style="margin:0 2px">${d.who.length ? 'Es una sola tarea para ' + (allPicked() ? 'todos' : 'ellos') : 'Cualquiera la puede hacer'}: el primero que la haga se la lleva, se quita para los demás y los puntos son solo para él.</p>` : ''}</div>
+    <div class="field"><span class="label">Repetir</span><div class="opts">${Object.entries(REPEATS).map(([kk, x]) => `<button type="button" class="opt" data-f="repeat" data-v="${kk}" aria-pressed="${k === kk}">${kk !== 'none' ? ICON.repeat : ''}${x.label}</button>`).join('')}</div>
+      ${R && R.n ? `<div class="rep-days"><div class="days" role="group" aria-label="Días en que se repite">${[1, 2, 3, 4, 5, 6, 0].map(x => `<button type="button" data-f="rday" data-v="${x}" aria-pressed="${d.days.includes(x)}" aria-label="${cap(DAY_NAMES[x])}">${['D', 'L', 'M', 'M', 'J', 'V', 'S'][x]}</button>`).join('')}</div></div><p class="note" style="margin:2px 2px 0">Sale los ${[...d.days].sort(monFirst).map(x => DAY_NAMES[x]).join(' y ')} de cada semana. Toca otro día para cambiarlo.</p>` : ''}
+    </div>
+    <div class="field"><span class="label">¿Para cuándo?</span>${dueField}</div>
+    ${n > 1 ? `<p class="make-n">${ICON.tasks}<span>Se van a crear <b>${n} tareas</b>: una en cada lugar.</span></p>` : ''}`;
   };
   openSheet({
     title: isEdit ? 'Editar tarea' : 'Nueva tarea',
@@ -3234,14 +3331,15 @@ function openTaskSheet(existing, preset){
           else d.rooms = [...d.rooms, v];
         }
         else if(f === 'diff') d.diff = v;
-        else if(f === 'who'){
-          if(!v) d.who = [];
-          else if(isEdit) d.who = [v];
-          else d.who = d.who.includes(v) ? d.who.filter(x => x !== v) : [...d.who, v];
-        }
+        else if(f === 'who') d.who = !v ? [] : d.who.includes(v) ? d.who.filter(x => x !== v) : [...d.who, v];
         else if(f === 'who-all') d.who = allPicked() ? [] : ids();
         else if(f === 'due') d.due = dueFromKey(v);
-        else if(f === 'repeat'){ d.repeat = v; d.days = REPEATS[v].n ? (d.days && d.days.length === REPEATS[v].n ? d.days : [...REPEATS[v].def]) : null; }
+        else if(f === 'repeat'){
+          d.repeat = v;
+          if(REPEATS[v].n){ d.lastDays = d.lastDays || {}; if(d.days && d.days.length) d.lastDays[d.days.length] = d.days; d.days = d.lastDays[REPEATS[v].n] || [...REPEATS[v].def]; }
+          else if(d.days && d.days.length){ d.lastDays = {...(d.lastDays || {}), [d.days.length]: d.days}; }
+          if((v === 'daily' || v === 'alt') && !(d.due === ymd(today()) || d.due === ymd(addDays(today(), 1)))) d.due = ymd(today());
+        }
         else if(f === 'rday'){
           // siempre quedan los días justos: si ya están completos, el nuevo reemplaza al más antiguo
           const x = +v;
@@ -3265,19 +3363,16 @@ function openTaskSheet(existing, preset){
         const title = $('#tfTitle').value.trim().replace(/\s+/g, ' ');
         if(!title){ $('#tfErr').hidden = false; $('#tfTitle').classList.add('bad'); $('#tfTitle').focus(); return; }
         busy = true; $('#tfSubmit').disabled = true;
-        const base = {title: cap(title), diff:d.diff, points:DIFFS[d.diff].pts, due:d.due || null, repeat:d.repeat, days: REPEATS[d.repeat].n ? [...d.days] : null};
+        const base = {title: cap(title), diff:d.diff, points:DIFFS[d.diff].pts, due:startDue(), repeat:d.repeat, days: REPEATS[d.repeat].n ? [...d.days].sort(monFirst) : null, ...whoFields(d.who)};
         let ok = true, made = 0;
-        if(isEdit) ok = await write(() => DB.doc('tasks/' + existing.id).update({...base, room:d.rooms[0], assignee:d.who[0] || null, editedBy:S.me || null}));
+        if(isEdit) ok = await write(() => DB.doc('tasks/' + existing.id).update({...base, room:d.rooms[0], editedBy:S.me || null}));
         else {
           const now = new Date().toISOString();
           for(const room of d.rooms){
-            for(const who of (d.who.length ? d.who : [null])){
-              const ref = DB.collection('tasks').doc();
-              ok = await write(() => ref.set({...base, room, assignee:who, done:false, doneBy:null, doneAt:null, createdBy:S.me, createdAt:now}));
-              if(!ok) break;
-              made++;
-            }
+            const ref = DB.collection('tasks').doc();
+            ok = await write(() => ref.set({...base, room, done:false, doneBy:null, doneAt:null, createdBy:S.me, createdAt:now}));
             if(!ok) break;
+            made++;
           }
         }
         busy = false;
@@ -3524,7 +3619,7 @@ function openSettings(){
           try { localStorage.removeItem(cacheKey()); } catch {}
           lsSet('casa.code', null); lsSet('casa.topic', null); lsSet('casa.me', null);
           CODE = null; DB = null; S.me = null; S.synced = false; S.subscribed = false; S.configLoaded = false; S.configExists = false;
-          S.members = []; S.pending = []; S.done = []; S.groceries = []; S.weeks = {}; S.catalog = [];
+          S.members = []; S.pending = []; S.pendingAll = []; S.later = []; S.done = []; S.groceries = []; S.weeks = {}; S.catalog = [];
           S.needCode = true; S.codeError = ''; S.mounted = null;
           render();
         }
@@ -3639,9 +3734,10 @@ const ACTIONS = {
   'room-clear'(){ S.taskRoom = null; render(); },
   'quick-chore'(b){ quickChore(b.dataset.t); },
   prize(){ openPrizeSheet(); },
-  super(){ S.superMode = !S.superMode; lsSet('casa.super', S.superMode ? '1' : '0'); render(); },
+  super(){ S.superMode = !S.superMode; S.superDone = 0; lsSet('casa.super', S.superMode ? '1' : '0'); render(); },
   'qa-cat'(){ openCatPicker(); },
-  'g-toggle'(b){ toggleGrocery(b.dataset.id); },
+  'g-toggle'(b){ toggleGrocery(b.dataset.id, b); },
+  later(){ S.showLater = !S.showLater; render(); },
   'g-edit'(b){ const g = S.groceries.find(x => x.id === b.dataset.id); if(g) openGrocerySheet(g); },
   'g-sugg'(b){ addGrocery(b.dataset.n); },
   'g-clear'(){ clearCart(); },
